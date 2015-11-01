@@ -1,0 +1,3 @@
+# Module atvp
+# RPC service class, partial path of RPC policy file
+com.coutinho.atvp.client.GreetingService, 361196AD070E993A4BA6692DD9DB3391.gwt.rpc

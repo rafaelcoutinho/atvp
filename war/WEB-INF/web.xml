@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+              http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	version="2.5" xmlns="http://java.sun.com/xml/ns/javaee">
+
+	<!-- Servlets -->
+	<filter>
+		<filter-name>headerAdder</filter-name>
+		<filter-class>com.coutinho.atvp.server.RestServletFilters</filter-class>
+
+	</filter>
+	<filter-mapping>
+		<filter-name>headerAdder</filter-name>
+		<url-pattern>/rest/*</url-pattern>
+	</filter-mapping>
+	<servlet>
+		<servlet-name>signUpServlet</servlet-name>
+		<servlet-class>com.coutinho.atvp.server.SignUpServiceImpl</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>rankingServlet</servlet-name>
+		<servlet-class>com.coutinho.atvp.server.RankingServiceImpl</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>mailTester</servlet-name>
+		<servlet-class>com.coutinho.atvp.server.MailTester</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>playerServlet</servlet-name>
+		<servlet-class>com.coutinho.atvp.server.PlayerServiceImpl</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>matchServlet</servlet-name>
+		<servlet-class>com.coutinho.atvp.server.MatchServiceImpl</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>friendshipServlet</servlet-name>
+		<servlet-class>com.coutinho.atvp.server.FriendServiceImpl</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>tournamentServlet</servlet-name>
+		<servlet-class>com.coutinho.atvp.server.TournamentServiceImpl</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>tournamentServlet</servlet-name>
+		<url-pattern>/rest/tournaments</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>friendshipServlet</servlet-name>
+		<url-pattern>/rest/friendship</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>playerServlet</servlet-name>
+		<url-pattern>/rest/player</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>matchServlet</servlet-name>
+		<url-pattern>/rest/match</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>mailTester</servlet-name>
+		<url-pattern>/test/mail</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>rankingServlet</servlet-name>
+		<url-pattern>/rest/ranking</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>signUpServlet</servlet-name>
+		<url-pattern>/rest/signup</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>signUpServlet</servlet-name>
+		<url-pattern>/rest/login</url-pattern>
+	</servlet-mapping>
+	<!-- Default page to serve -->
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+	</welcome-file-list>
+
+</web-app>

@@ -1,0 +1,2 @@
+serviceClass: com.coutinho.atvp.client.GreetingService
+path: 361196AD070E993A4BA6692DD9DB3391.gwt.rpc

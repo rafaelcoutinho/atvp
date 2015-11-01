@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<datastore-indexes autoGenerate="true">
+	<datastore-index kind="Match" ancestor="false" source="manual">
+		<property name="idPlayerOne" direction="asc" />
+		<property name="idRanking" direction="asc" />
+		<property name="date" direction="asc" />
+	</datastore-index>
+
+	<datastore-index kind="Match" ancestor="false" source="auto">
+		<property name="idPlayerTwo" direction="asc" />
+		<property name="idRanking" direction="asc" />
+		<property name="date" direction="asc" />
+	</datastore-index>
+	<datastore-index kind="Match" ancestor="false" source="manual">
+		<property name="idPlayerOne" direction="asc" />
+		<property name="idRanking" direction="asc" />
+		<property name="date" direction="desc" />
+	</datastore-index>
+	<datastore-index kind="Match" ancestor="false" source="manual">
+		<property name="idPlayerTwo" direction="asc" />
+		<property name="idRanking" direction="asc" />
+		<property name="date" direction="desc" />
+	</datastore-index>
+	<datastore-index kind="Set" ancestor="true" source="auto">
+		<property name="number" direction="asc" />
+	</datastore-index>
+	<datastore-index kind="Friendship" ancestor="false"
+		source="manual">
+		<property name="idPlayerOne" direction="asc" />
+		<property name="since" direction="asc" />
+	</datastore-index>
+
+	<datastore-index kind="Invitation" ancestor="false"
+		source="manual">
+		<property name="to" direction="asc" />
+		<property name="since" direction="desc" />
+	</datastore-index>
+	<datastore-index kind="Invitation" ancestor="false"
+		source="manual">
+		<property name="from" direction="asc" />
+		<property name="since" direction="desc" />
+	</datastore-index>
+
+</datastore-indexes>

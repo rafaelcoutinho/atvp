@@ -1,0 +1,185 @@
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>jQuery UI Draggable - Default functionality</title>
+<link rel="stylesheet"
+	href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+<script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+
+<style>
+#draggable {
+	width: 150px;
+	height: 150px;
+	padding: 0.5em;
+}
+</style>
+<script>
+	$(document).ready(function() {
+
+		$.getJSON("/rest/player?action=list", function(data) {
+			$("#p1 option").remove();
+			$("#p2 option").remove();
+			$("#datepicker").datepicker({
+				onSelect : function() {
+					$("#date").val($(this).datepicker("getDate").getTime());
+
+				}
+			});
+
+			$.each(data, function(index, item) { // Iterates through a collection
+				$("#p1").append( // Append an object to the inside of the select box
+				$("<option></option>") // Yes you can do this.
+				.text(item.name).val(item.id));
+				$("#p2").append( // Append an object to the inside of the select box
+				$("<option></option>") // Yes you can do this.
+				.text(item.name).val(item.id));
+				playerHash[item.id] = item;
+
+			});
+		});
+
+		$.getJSON("/rest/player?action=list", function(data) {
+			$("#managerList option").remove();
+			$("#managerList2 option").remove(); // Remove all <option> child tags.
+			$("#managerList3 option").remove(); // Remove all <option> child tags.
+			$("#managerList4 option").remove();
+			$.each(data, function(index, item) { // Iterates through a collection
+				$("#managerList").append( // Append an object to the inside of the select box
+				$("<option></option>") // Yes you can do this.
+				.text(item.email).val(item.id));
+				$("#managerList2").append( // Append an object to the inside of the select box
+				$("<option></option>") // Yes you can do this.
+				.text(item.email).val(item.id));
+				$("#managerList3").append( // Append an object to the inside of the select box
+				$("<option></option>") // Yes you can do this.
+				.text(item.email).val(item.id));
+				$("#managerList4").append($("<option></option>").text(item.email).val(item.id));
+			});
+		});
+	});
+
+	function loadManagersRankings() {
+		var manager = $("#managerList3 option:selected").val();
+		$.getJSON("/rest/ranking?action=list&idManager=" + manager, function(data) {
+			$("#rankingList option").remove();
+
+			$.each(data, function(index, item) { // Iterates through a collection
+				$("#rankingList").append( // Append an object to the inside of the select box
+				$("<option></option>") // Yes you can do this.
+				.text(item.title).val(item.id));
+
+			});
+		});
+	}
+	var playerHash = {};
+	function listMatches() {
+		var rankings = $("#rankingList2 option:selected").val();
+		$.getJSON("/rest/match?action=list&idRanking=" + rankings, function(data) {
+			$("#matches div").remove();
+
+			$.each(data, function(index, item) { // Iterates through a collection
+				$("#matches").append('<div><form action="/rest/match" method="post"><input type="hidden" name="action" value="persist">' + '<input type="text" name="idRanking" value="'+item.idRanking+'">' + '<input type="text" name="id" value="'+item.id+'">'
+
+				+ playerHash[item.idPlayerOne].name + ' vs ' + playerHash[item.idPlayerTwo].name + ' date <input type=text name=date value='+item.date+'>' + '<input type="submit" value="salvar">' + ' 	</form>' + '<form action="/rest/match" method="post">' + '<input type="text" name="idRanking" value="'+item.idRanking+'">' + '<input type="text" name="id" value="'+item.id+'">' + '<input type="hidden" name="action" value="addset"><input type="submit" value="Cria Set"></form>'
+
+				+ '<a href="manageMatch.jsp?id=' + item.id + '&idRanking=' + item.idRanking + '">Detalhes</a></div>');
+
+			});
+		});
+	}
+	function loadManagersRankings2() {
+		var manager = $("#managerList4 option:selected").val();
+		$.getJSON("/rest/ranking?action=list&idManager=" + manager, function(data) {
+			$("#rankingList2 option").remove();
+
+			$.each(data, function(index, item) { // Iterates through a collection
+				$("#rankingList2").append( // Append an object to the inside of the select box
+				$("<option></option>") // Yes you can do this.
+				.text(item.title).val(item.id));
+
+			});
+		});
+	}
+</script>
+</head>
+<body>
+	<div>
+		<h2>Jogador</h2>
+		<form action="/rest/signup" method="post">
+			<input type="hidden" name="action" value="persist"> Nome <input
+				type="text" name="name"><br> Apelido <input type="text"
+				name="nickname"><br> Email <input type="text"
+				name="email"><br>Licenças <input type="number"
+				name="licenses"><br> Senha <input type="text"
+				name="password"><br> <input type="submit">
+		</form>
+		<hr>
+		<form action="/rest/player" method="post">
+			<input type="hidden" name="action" value="updatelicense">
+			Email <input type="text" name="email"><br>Licenças <input
+				type="number" name="licenses"> <input type="submit">
+		</form>
+		<form action="/rest/player" method="get">
+			<input type="hidden" name="action" value="list"> <input
+				type="submit" value="Listar">
+		</form>
+	</div>
+
+	<div>
+		<h2>Gerente de Ranking</h2>
+		<form action="/rest/player" method="post">
+			<input type="hidden" name="action" value="persist"> Nome <input
+				type="text" name="name"><br> Email <input type="text"
+				name="email"><br> Senha <input type="text"
+				name="password"><br> <input type="submit">
+		</form>
+		<form action="/rest/player" method="get">
+			<input type="hidden" name="action" value="list"> <input
+				type="submit" value="Listar">
+		</form>
+	</div>
+
+	<div>
+		<h2>Ranking</h2>
+		<form action="/rest/ranking" method="post">
+			<input type="hidden" name="action" value="persist"> Manager <select
+				id="managerList" name="idManager"></select> <br> title <input
+				type="text" name="title"><br> descricao <input
+				type="text" name="description"><br> <input
+				type="submit">
+		</form>
+		<form action="/rest/match" method="get">
+			Manager <select id="managerList2" name="idManager"></select> <input
+				type="hidden" name="action" value="list"> <input
+				type="submit" value="Listar">
+		</form>
+	</div>
+
+	<div>
+		<h2>Partida</h2>
+
+		Manager <select id="managerList3" name="idManager"
+			onchange="loadManagersRankings()"></select><input type="button"
+			value="Carregar" onclick="loadManagersRankings()">
+		<form action="/rest/match" method="post">
+			<input type="hidden" name="action" value="persist"><br>
+			Rankings <select id="rankingList" name="idRanking"></select> <br>
+			Jogadores: <select id="p1" name="idPlayerOne"></select> x <select
+				id="p2" name="idPlayerTwo"></select> <br> Data: <input
+				type="text" id="datepicker" name="altdate"> <input
+				type="hidden" id="date" name="date"> <br> <input
+				type="submit">
+		</form>
+		<form action="/rest/match" method="get">
+			Manager <select id="managerList4" name="idManager"
+				onchange="loadManagersRankings2()"></select><input type="button"
+				value="Carregar" onclick="loadManagersRankings2()"> Rankings
+			<select id="rankingList2" name="idRanking"></select> <input
+				type="hidden" name="action" value="list"> <input
+				type="button" value="Listar" onclick="listMatches()">
+		</form>
+	</div>
+	<br>
+	<div id="matches"></div>

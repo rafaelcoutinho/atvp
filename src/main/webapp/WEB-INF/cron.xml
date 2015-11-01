@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cronentries>
+  <cron>
+    <url>/rest/match?action=updatematches</url>
+    <description>Updates last Matches</description>
+    <schedule>every day 00:00</schedule>
+  </cron>
+  
+</cronentries>

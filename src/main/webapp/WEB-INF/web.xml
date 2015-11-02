@@ -39,13 +39,20 @@
 		<servlet-name>friendshipServlet</servlet-name>
 		<servlet-class>com.coutinho.atvp.server.FriendServiceImpl</servlet-class>
 	</servlet>
+
+
 	<servlet>
-		<servlet-name>tournamentServlet</servlet-name>
-		<servlet-class>com.coutinho.atvp.server.TournamentServiceImpl</servlet-class>
+		<servlet-name>RestletServlet</servlet-name>
+		<servlet-class>org.restlet.ext.servlet.ServerServlet</servlet-class>
+		<init-param>
+			<param-name>org.restlet.application</param-name>
+			<param-value>com.coutinho.atvp.RestletJaxRSApplicationConverter</param-value>
+		</init-param>
 	</servlet>
+
 	<servlet-mapping>
-		<servlet-name>tournamentServlet</servlet-name>
-		<url-pattern>/rest/tournaments</url-pattern>
+		<servlet-name>RestletServlet</servlet-name>
+		<url-pattern>/endpoints/*</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>friendshipServlet</servlet-name>

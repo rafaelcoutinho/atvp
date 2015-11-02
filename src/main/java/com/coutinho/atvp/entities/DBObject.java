@@ -1,5 +1,6 @@
 package com.coutinho.atvp.entities;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -8,6 +9,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.persistence.Transient;
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.JSONObject;
@@ -104,9 +106,24 @@ public abstract class DBObject<E> {
 
 				if (f.getName().startsWith("get")
 						&& f.getParameterTypes().length == 0) {
+
+					if (isTransient(f.getAnnotations())) {
+						System.out.println("Ignorado " + f.getName()
+								+ " transient");
+						continue;
+					}
 					String propName = f.getName().substring(3, 4);
+
 					propName = propName.toLowerCase()
 							+ f.getName().substring(4);
+					System.out.println(propName);
+
+					if (isTransient(this.getClass().getDeclaredField(propName)
+							.getAnnotations())) {
+						System.out.println("Ignorado " + propName
+								+ " @transient");
+						continue;
+					}
 					Object obj = convertProp(propName, f.getReturnType());
 					if (obj != null) {
 						entity.setProperty(propName, obj);
@@ -119,6 +136,17 @@ public abstract class DBObject<E> {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public boolean isTransient(Annotation[] as) {
+		for (int j = 0; j < as.length; j++) {
+			if (javax.persistence.Transient.class
+					.equals(as[j].annotationType())) {
+
+				return true;
+			}
+		}
+		return false;
 	}
 
 	protected Object convertProp(String propName, Class propClass) {
@@ -206,6 +234,7 @@ public abstract class DBObject<E> {
 
 	}
 
+	@Transient
 	public String getIk() {
 		if (id == null) {
 			return null;
@@ -213,6 +242,7 @@ public abstract class DBObject<E> {
 		return KeyFactory.keyToString(id);
 	}
 
+	@Transient
 	public Long getId() {
 		if (id == null) {
 			return null;
@@ -225,6 +255,7 @@ public abstract class DBObject<E> {
 		return;
 	}
 
+	@Transient
 	public String getKind() {
 		return getClass().getSimpleName();
 	}

@@ -26,26 +26,27 @@ Nao é gerente!
 	Long idManager = Long.parseLong(request.getParameter("idManager"));
 %>
 <script>
-function saveTour(){
-	console.log();
-	$.ajax({
-		  type: "POST",
-		  url: "/rest/tournaments",
-		  data: {
-			  idManager:<%=idManager%>,
-			  name:$("[name='name']").val(),
-			  rounds:$("[name='rounds']").val()
-			  
-			  
-		  },
-		  success: function(){
-			  console.log("asdfsaf");
-			  window.location=window.location;
-		  },
-		  dataType: "json"
+	function saveTour() {
+		console.log();
+		$.ajax({
+			type : "POST",
+			contentType : 'application/json',
+			url : "/endpoints/tournament",
+			data : JSON.stringify({
+				idManager :
+<%=idManager%>
+	,
+				name : $("[name='name']").val(),
+				rounds : $("[name='rounds']").val()
+			}),
+			success : function() {
+				console.log("asdfsaf");
+				window.location = window.location;
+			},
+			dataType : "json"
 		});
-	
-}
+
+	}
 </script>
 Criar torneio
 <br>
@@ -53,28 +54,6 @@ Criar torneio
 <form action="#" id="torneio">
 	Nome: <input type="text" name="name"><br> # de rounds: <input
 		type="number" name="rounds"><br> <input type="hidden"
-		name="manager" value="<%=idManager%>"> 
-		<input type="button" onclick="saveTour()"
-		value="Criar">
+		name="manager" value="<%=idManager%>"> <input type="button"
+		onclick="saveTour()" value="Criar">
 </form>
-
-
-
-<%
-	Iterable<Entity> meusTorneios = DBFacade.getInstance()
-			.queryManagersTournments(idManager);
-%>
-Meus Torneios:
-<br>
-<ul>
-	<%
-		for (Iterator iterator = meusTorneios.iterator(); iterator
-				.hasNext();) {
-			Entity type = (Entity) iterator.next();
-			Tournament t = new Tournament(type);
-	%>
-	<li><%=t.getName()%> - <%=t.getNumberOfRounds()%></li>
-	<%
-		}
-	%>
-</ul>

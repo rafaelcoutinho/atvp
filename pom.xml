@@ -8,7 +8,13 @@
 
 	<groupId>com.coutinho.atvp</groupId>
 	<artifactId>atvpweb</artifactId>
-
+	<repositories>
+		<repository>
+			<id>maven-restlet</id>
+			<name>Restlet repository</name>
+			<url>http://maven.restlet.com</url>
+		</repository>
+	</repositories>
 	<properties>
 		<app.id>tenis-virtual-players</app.id>
 		<app.version>1</app.version>
@@ -16,6 +22,7 @@
 		<gcloud.plugin.version>2.0.9.74.v20150814</gcloud.plugin.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
+		<restlet-version>2.1.4</restlet-version>
 	</properties>
 
 	<prerequisites>
@@ -65,6 +72,68 @@
 			<version>${appengine.version}</version>
 			<scope>test</scope>
 		</dependency>
+
+
+		<!-- JPA 2.0 for GAE -->
+		<dependency>
+			<groupId>org.datanucleus</groupId>
+			<version>3.0.5</version>
+			<artifactId>datanucleus-api-jdo</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.datanucleus</groupId>
+			<version>3.0.6</version>
+			<artifactId>datanucleus-api-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.appengine.orm</groupId>
+			<artifactId>datanucleus-appengine</artifactId>
+			<version>2.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.datanucleus</groupId>
+			<artifactId>datanucleus-core</artifactId>
+			<version>3.0.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.geronimo.specs</groupId>
+			<artifactId>geronimo-jpa_2.0_spec</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.jdo</groupId>
+			<artifactId>jdo-api</artifactId>
+			<version>3.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.ws.rs</groupId>
+			<artifactId>javax.ws.rs</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.restlet.jee</groupId>
+			<artifactId>org.restlet.ext.servlet</artifactId>
+			<version>${restlet-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.restlet.jse</groupId>
+			<artifactId>org.restlet</artifactId>
+			<version>${restlet-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.restlet.jee</groupId>
+			<artifactId>org.restlet.ext.jaxrs</artifactId>
+			<version>${restlet-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.restlet.jse</groupId>
+			<artifactId>org.restlet.ext.jackson</artifactId>
+			<version>${restlet-version}</version>
+		</dependency>
+
+
 	</dependencies>
 
 	<build>

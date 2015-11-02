@@ -1,5 +1,7 @@
 package com.coutinho.atvp.db;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.coutinho.atvp.entities.DBObject;
@@ -11,6 +13,7 @@ import com.coutinho.atvp.entities.MatchState;
 import com.coutinho.atvp.entities.Player;
 import com.coutinho.atvp.entities.Ranking;
 import com.coutinho.atvp.entities.Set;
+import com.coutinho.atvp.entities.Tournament;
 import com.coutinho.atvp.exception.EntityValidationException;
 import com.coutinho.atvp.exception.LoginFailedException;
 import com.google.appengine.api.datastore.DatastoreService;
@@ -99,13 +102,21 @@ public class DBFacade {
 		PreparedQuery pq = datastore.prepare(q);
 		return pq.asIterable();
 	}
-	
-	public Iterable<Entity> queryManagersTournments(Long id) {
+
+	public List<Tournament> queryManagersTournments(Long id) {
 		Query q = new Query(Ranking.class.getSimpleName());
 		Filter f = new FilterPredicate("idManager", FilterOperator.EQUAL, id);
 		q.setFilter(f);
 		PreparedQuery pq = datastore.prepare(q);
-		return pq.asIterable();
+		List<Tournament> ts = new ArrayList<Tournament>();
+		for (Iterator<Entity> iterator = pq.asIterable().iterator(); iterator
+				.hasNext();) {
+			Entity type = (Entity) iterator.next();
+			Tournament t = new Tournament(type);
+			ts.add(t);
+		}
+		return ts;
+
 	}
 
 	public Iterable<Entity> queryAll(Class class1) {

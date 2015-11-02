@@ -1,4 +1,4 @@
-appengine-skeleton
+ATVP Web part
 =============================
 
-This is a generated application from the appengine-skeleton archetype.
+This is the web backend for ATVP.

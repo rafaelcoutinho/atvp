@@ -6,8 +6,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
-import com.coutinho.atvp.server.TournmentJsonDeserializer;
-import com.coutinho.atvp.server.TournmentJsonSerializer;
+import com.coutinho.atvp.server.serializers.TournmentJsonDeserializer;
+import com.coutinho.atvp.server.serializers.TournmentJsonSerializer;
 import com.google.appengine.api.datastore.Entity;
 
 @JsonDeserialize(using = TournmentJsonDeserializer.class)

@@ -27,6 +27,10 @@ public abstract class DBObject<E> {
 		return id;
 	}
 
+	public void setKey(Key id) {
+		this.id = id;
+	}
+
 	public DBObject() {
 
 	}
@@ -116,7 +120,6 @@ public abstract class DBObject<E> {
 
 					propName = propName.toLowerCase()
 							+ f.getName().substring(4);
-					System.out.println(propName);
 
 					if (isTransient(this.getClass().getDeclaredField(propName)
 							.getAnnotations())) {
@@ -131,6 +134,7 @@ public abstract class DBObject<E> {
 						entity.setProperty(propName, f.invoke(this));
 					}
 				}
+			} catch (NoSuchFieldException e) {
 			} catch (Exception e) {
 
 				e.printStackTrace();

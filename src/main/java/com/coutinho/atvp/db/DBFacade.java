@@ -12,6 +12,7 @@ import com.coutinho.atvp.entities.Match;
 import com.coutinho.atvp.entities.MatchState;
 import com.coutinho.atvp.entities.Player;
 import com.coutinho.atvp.entities.Ranking;
+import com.coutinho.atvp.entities.ScheduledMatch;
 import com.coutinho.atvp.entities.Set;
 import com.coutinho.atvp.entities.Tournament;
 import com.coutinho.atvp.exception.EntityValidationException;
@@ -60,6 +61,7 @@ public class DBFacade {
 		p.setProperties(player);
 		p.validate(datastore);
 		Key k = datastore.put(player);
+		p.setKey(k);
 		return k;
 	}
 
@@ -81,6 +83,57 @@ public class DBFacade {
 			throws EntityNotFoundException {
 		Key k = KeyFactory.createKey(classType.getSimpleName(), id);
 		return get(k, classType);
+
+	}
+
+	public Tournament getTournament(long id) throws EntityNotFoundException {
+		Key k = KeyFactory.createKey(Tournament.class.getSimpleName(), id);
+		Tournament sm = (Tournament) (get(k, Tournament.class));
+		return sm;
+	}
+
+	public Match getMatch(long id) throws EntityNotFoundException {
+		Key k = KeyFactory.createKey(Match.class.getSimpleName(), id);
+		Match sm = (Match) (get(k, Match.class));
+		return sm;
+	}
+
+	public ScheduledMatch getScheduledMatch(long id, boolean fetchall)
+			throws EntityNotFoundException {
+		Key k = KeyFactory.createKey(ScheduledMatch.class.getSimpleName(), id);
+		ScheduledMatch sm = (ScheduledMatch) (get(k, ScheduledMatch.class));
+		if (fetchall) {
+			sm.setTournment(getTournament(sm.getId()));
+			if (sm.getMatchId() != null) {
+				sm.setMatch(getMatch(sm.getMatchId()));
+			}
+			if (sm.getNextScheduledMatchId() != null) {
+				sm.setNextScheduledMatch(getScheduledMatch(
+						sm.getNextScheduledMatchId(), true));
+			}
+		}
+		return sm;
+
+	}
+
+	public List<ScheduledMatch> getScheduledMatchesOfTournment(long id,
+			boolean fetchall) throws EntityNotFoundException {
+		Filter p1Filter = new FilterPredicate("tournmentId",
+				FilterOperator.EQUAL, id);
+
+		Query q = new Query(ScheduledMatch.class.getSimpleName());
+		q.addSort("round", SortDirection.ASCENDING);
+		q.setFilter(p1Filter);
+		PreparedQuery pq = datastore.prepare(q);
+		List<ScheduledMatch> ts = new ArrayList<ScheduledMatch>();
+		for (Iterator<Entity> iterator = pq.asIterable().iterator(); iterator
+				.hasNext();) {
+			Entity type = (Entity) iterator.next();
+			ScheduledMatch t = new ScheduledMatch(type);
+			ts.add(t);
+		}
+
+		return ts;
 
 	}
 

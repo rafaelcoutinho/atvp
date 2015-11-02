@@ -1,4 +1,4 @@
-package com.coutinho.atvp.server;
+package com.coutinho.atvp.server.serializers;
 
 import java.io.IOException;
 

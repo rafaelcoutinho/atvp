@@ -5,7 +5,7 @@ import java.util.Set;
 
 import javax.ws.rs.core.Application;
 
-import com.coutinho.atvp.server.TournmentEndpoint;
+import com.coutinho.atvp.server.endpoints.TournmentEndpoint;
 
 public class ATVPRestApp extends Application {
 

@@ -33,18 +33,31 @@ Nao é gerente!
 			contentType : 'application/json',
 			url : "/endpoints/tournament",
 			data : JSON.stringify({
-				idManager :
-<%=idManager%>
-	,
+				idManager : ${param.idManager},
 				name : $("[name='name']").val(),
 				rounds : $("[name='rounds']").val()
 			}),
-			success : function() {
-				console.log("asdfsaf");
-				window.location = window.location;
+			success : function(data) {
+				console.log("",data);
 			},
 			dataType : "json"
 		});
+		return false;
+
+	}
+	function addPlayer() {
+		$.ajax({
+			type : "POST",
+			contentType : 'application/json',
+			url : "/endpoints/tournament/"+$("[name='tournament']").val()+"/players/"+$("[name='player']").val(),
+			
+			success : function(data) {
+				console.log("",data);
+				
+			},
+			dataType : "json"
+		});
+		return false;
 
 	}
 </script>
@@ -54,6 +67,12 @@ Criar torneio
 <form action="#" id="torneio">
 	Nome: <input type="text" name="name"><br> # de rounds: <input
 		type="number" name="rounds"><br> <input type="hidden"
-		name="manager" value="<%=idManager%>"> <input type="button"
-		onclick="saveTour()" value="Criar">
+		name="manager" value="${param.idManager}"> <input
+		type="button" onclick="saveTour()" value="Criar">
+</form>
+
+<form action="#" id="associa">
+	PlayerId: <input type="text" name="player"><br> <input
+		type="text" name="tournament"> <input type="button"
+		onclick="addPlayer()" value="Participar">
 </form>

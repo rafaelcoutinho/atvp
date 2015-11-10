@@ -1,7 +1,9 @@
 package com.coutinho.atvp.entities;
 
+import java.util.Date;
 import java.util.Map;
 
+import javax.persistence.Transient;
 import javax.servlet.http.HttpServletRequest;
 
 import com.coutinho.atvp.db.DBFacade;
@@ -15,6 +17,10 @@ public class Match extends DBObject<Match> {
 
 	Integer totalSetsPlayerOne;
 	Integer totalSetsPlayerTwo;
+	@Transient
+	Player playerOne;
+	@Transient
+	Player playerTwo;
 
 	public Integer getTotalSetsPlayerOne() {
 		return totalSetsPlayerOne;
@@ -87,6 +93,20 @@ public class Match extends DBObject<Match> {
 		}
 	}
 
+	public Match(Long idPlayerOne, Long idPlayerTwo, Date date) {
+		this(idPlayerOne, idPlayerTwo, date == null ? null : date.getTime());
+	}
+
+	public Match(Long idPlayerOne, Long idPlayerTwo, Long date) {
+		super();
+		state = MatchState.Pending;
+		this.idPlayerOne = idPlayerOne;
+		this.idPlayerTwo = idPlayerTwo;
+		this.date = date;
+		this.totalSetsPlayerOne = 0;
+		this.totalSetsPlayerTwo = 0;
+	}
+
 	public Match(Ranking ranking, Long idPlayerOne, Long idPlayerTwo, Long date) {
 		super();
 		state = MatchState.Pending;
@@ -154,6 +174,22 @@ public class Match extends DBObject<Match> {
 		totalSetsPlayerOne = 0;
 		totalSetsPlayerTwo = 0;
 
+	}
+
+	public Player getPlayerOne() {
+		return playerOne;
+	}
+
+	public void setPlayerOne(Player playerOne) {
+		this.playerOne = playerOne;
+	}
+
+	public Player getPlayerTwo() {
+		return playerTwo;
+	}
+
+	public void setPlayerTwo(Player playerTwo) {
+		this.playerTwo = playerTwo;
 	}
 
 }

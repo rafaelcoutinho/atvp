@@ -3,6 +3,8 @@ package com.coutinho.atvp.db;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.coutinho.atvp.entities.DBObject;
 import com.coutinho.atvp.entities.Friendship;
@@ -15,6 +17,7 @@ import com.coutinho.atvp.entities.Ranking;
 import com.coutinho.atvp.entities.ScheduledMatch;
 import com.coutinho.atvp.entities.Set;
 import com.coutinho.atvp.entities.Tournament;
+import com.coutinho.atvp.entities.TournmentParticipant;
 import com.coutinho.atvp.exception.EntityValidationException;
 import com.coutinho.atvp.exception.LoginFailedException;
 import com.google.appengine.api.datastore.DatastoreService;
@@ -92,9 +95,22 @@ public class DBFacade {
 		return sm;
 	}
 
-	public Match getMatch(long id) throws EntityNotFoundException {
+	public Match getMatch(long id, boolean fetch)
+			throws EntityNotFoundException {
 		Key k = KeyFactory.createKey(Match.class.getSimpleName(), id);
 		Match sm = (Match) (get(k, Match.class));
+		if (fetch) {
+			if (sm.getIdPlayerOne() != null) {
+				Key kp = KeyFactory.createKey(Player.class.getSimpleName(),
+						sm.getIdPlayerOne());
+				sm.setPlayerOne((Player) get(kp, Player.class));
+			}
+			if (sm.getIdPlayerTwo() != null) {
+				Key kp = KeyFactory.createKey(Player.class.getSimpleName(),
+						sm.getIdPlayerTwo());
+				sm.setPlayerTwo((Player) get(kp, Player.class));
+			}
+		}
 		return sm;
 	}
 
@@ -105,7 +121,7 @@ public class DBFacade {
 		if (fetchall) {
 			sm.setTournment(getTournament(sm.getId()));
 			if (sm.getMatchId() != null) {
-				sm.setMatch(getMatch(sm.getMatchId()));
+				sm.setMatch(getMatch(sm.getMatchId(), true));
 			}
 			if (sm.getNextScheduledMatchId() != null) {
 				sm.setNextScheduledMatch(getScheduledMatch(
@@ -114,6 +130,59 @@ public class DBFacade {
 		}
 		return sm;
 
+	}
+
+	public TournmentParticipant getTournmentParticipants(Long id,
+			Long idParticipant, boolean b) throws EntityNotFoundException {
+		Filter p1Filter = new FilterPredicate("tournmentId",
+				FilterOperator.EQUAL, id);
+		Filter p2Filter = new FilterPredicate("participantId",
+				FilterOperator.EQUAL, idParticipant);
+
+		Filter bothFilter = CompositeFilterOperator.and(p1Filter, p2Filter);
+
+		Query q = new Query(TournmentParticipant.class.getSimpleName());
+		q.setFilter(bothFilter);
+		PreparedQuery pq = datastore.prepare(q);
+		if (pq.asIterator().hasNext()) {
+
+			Entity type = (Entity) pq.asIterable().iterator().next();
+			TournmentParticipant t = new TournmentParticipant(type);
+			if (b) {
+				t.setParticipant((Player) get(t.getParticipantId(),
+						Player.class));
+			}
+			return t;
+		}
+		return null;
+
+	}
+
+	Logger LOG = Logger.getLogger("DB");
+
+	public List<TournmentParticipant> getTournmentParticipants(Long id,
+			boolean b) throws EntityNotFoundException {
+		Filter p1Filter = new FilterPredicate("tournmentId",
+				FilterOperator.EQUAL, id);
+		Query q = new Query(TournmentParticipant.class.getSimpleName());
+		q.addSort("date", SortDirection.ASCENDING);
+		q.setFilter(p1Filter);
+		PreparedQuery pq = datastore.prepare(q);
+		List<TournmentParticipant> ts = new ArrayList<TournmentParticipant>();
+		for (Iterator<Entity> iterator = pq.asIterable().iterator(); iterator
+				.hasNext();) {
+			Entity type = (Entity) iterator.next();
+			LOG.log(Level.INFO, "t " + type);
+			TournmentParticipant t = new TournmentParticipant(type);
+			System.out.println("t " + t.getParticipantId());
+			if (b) {
+				Player p = (Player) get(t.getParticipantId(), Player.class);
+				t.setParticipant(p);
+			}
+			ts.add(t);
+		}
+		LOG.log(Level.INFO, "passou " + ts.size());
+		return ts;
 	}
 
 	public List<ScheduledMatch> getScheduledMatchesOfTournment(long id,
@@ -130,6 +199,11 @@ public class DBFacade {
 				.hasNext();) {
 			Entity type = (Entity) iterator.next();
 			ScheduledMatch t = new ScheduledMatch(type);
+			if (fetchall) {
+				if (t.getMatchId() != null) {
+					t.setMatch(getMatch(t.getMatchId(), true));
+				}
+			}
 			ts.add(t);
 		}
 

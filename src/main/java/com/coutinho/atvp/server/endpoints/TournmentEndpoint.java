@@ -3,6 +3,7 @@ package com.coutinho.atvp.server.endpoints;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ws.rs.Consumes;
@@ -28,6 +29,7 @@ import com.google.appengine.api.datastore.Key;
 @Path("tournament")
 public class TournmentEndpoint {
 	Logger LOG = Logger.getLogger("TournmentEndpoint");
+
 	@GET
 	@Path("/{id:[0-9]+}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -91,26 +93,55 @@ public class TournmentEndpoint {
 	public ScheduledMatch saveMatches(@FormParam("smId") Long id,
 			@FormParam("p1") Long p1, @FormParam("p2") Long p2) {
 		try {
-			LOG.info(id+" "+p1+" "+p2);
-			ScheduledMatch t = (ScheduledMatch) DBFacade.getInstance().get(id,
-					ScheduledMatch.class);
-			LOG.info(t+" "+t.getScheduledDate());
-			Match m = t.getMatch();
-			if (t.getMatch() == null) {
-				m = new Match(p1, p2, t.getScheduledDate());
+			LOG.log(Level.INFO, "salvando partida " + id + " " + p1 + " e "
+					+ p2);
+			ScheduledMatch schedMatch = (ScheduledMatch) DBFacade.getInstance()
+					.getScheduledMatch(id, true);
+			if (schedMatch == null) {
+				throw new IllegalArgumentException(
+						"Nao encontrou partida agendada com id " + id);
+			}
+			Long tournmentId = schedMatch.getTournmentId();
+			List<Entity> matches = DBFacade.getInstance().listRoundMatches(
+					tournmentId, schedMatch.getRound());
+			for (Iterator<Entity> iterator = matches.iterator(); iterator
+					.hasNext();) {
+				Match m = new Match(iterator.next());
+				LOG.log(Level.INFO, "checando match " + m.getId());
+				if (m.getIdPlayerOne().equals(p1)
+						|| m.getIdPlayerOne().equals(p2)) {
+					if (!m.getId().equals(schedMatch.getId())) {
+						LOG.log(Level.SEVERE, "Jogador " + m.getIdPlayerOne()
+								+ " ja esta jogando outra partida " + m.getId());
+						return null;
+					}
+				}
+				if (m.getIdPlayerTwo().equals(p1)
+						|| m.getIdPlayerTwo().equals(p2)) {
+					if (!m.getId().equals(schedMatch.getId())) {
+						LOG.log(Level.SEVERE, "Jogador " + m.getIdPlayerTwo()
+								+ " ja esta jogando outra partida " + m.getId());
+						return null;
+					}
+				}
+			}
+
+			Match m = schedMatch.getMatch();
+			if (schedMatch.getMatch() == null) {
+				m = new Match(p1, p2, schedMatch.getScheduledDate());
 				Key k = DBFacade.getInstance().persist(m);
 				m.setKey(k);
-				t.setMatch(m);
-				DBFacade.getInstance().persist(t);
+				schedMatch.setMatch(m);
+				DBFacade.getInstance().persist(schedMatch);
 			} else {
 				m.setIdPlayerOne(p1);
 				m.setIdPlayerTwo(p2);
 				DBFacade.getInstance().persist(m);
-				t = (ScheduledMatch) DBFacade.getInstance().get(id,
+				schedMatch = (ScheduledMatch) DBFacade.getInstance().get(id,
 						ScheduledMatch.class);
 			}
 
-			return t;
+			return schedMatch;
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -123,7 +154,7 @@ public class TournmentEndpoint {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<Tournament> list(@QueryParam("id") Long id) {
-		if (id == null) {
+		if (id != null) {
 			List<Tournament> ts = new ArrayList<Tournament>();
 			for (Iterator<Entity> iterator = DBFacade.getInstance()
 					.queryAll(Tournament.class).iterator(); iterator.hasNext();) {
@@ -139,8 +170,7 @@ public class TournmentEndpoint {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Tournament getResponse(Tournament tournament) {
-		System.out.println(tournament);
+	public Tournament createTournment(Tournament tournament) {
 		try {
 			DBFacade.getInstance().persist(tournament);
 			int numberOfRounds = tournament.getNumberOfRounds();

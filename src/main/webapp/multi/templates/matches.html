@@ -1,0 +1,22 @@
+<ion-view view-title="Matches"> <ion-content padding="2">
+<ion-refresher pulling-text="Puxe para atualizar..."
+	on-refresh="doRefresh()"> </ion-refresher>
+<p>Minhas partidas</p>
+<span style="font-size: xx-small;">* Partidas não pertencentes a
+	nenhum ranking.</span> 
+	<div>
+	<button class="button ion-arrow-left-a button-calm"
+	ng-click="movePrevious()" ></button>
+	<span >{{weekCount|toWeekStr:this}} ({{totalMatches}})</span>
+	<button class="button ion-arrow-right-a button-calm" style="float: right;"
+	ng-click="moveNext()" ></button>
+	</div>
+<ion-list> 
+	
+	<ion-item	ng-repeat="match in matches|byWeek:this" href="#/app/match/{{match.ik}}">
+<span class="subDate">{{match.date | date:'dd-MM-yyyy HH:mm'}}</span> <span
+	class="matchPlayers"> <img src="img/{{match|setCounter:1}}"> {{match.playerOne.name}} vs
+	{{match.playerTwo.name}} <img src="img/{{match|setCounter:2}}"></span></ion-item> </ion-list>  
+	
+</ion-content> 
+</ion-view>

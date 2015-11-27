@@ -1,0 +1,77 @@
+/* Empty. Add your own CSS if you like */
+.subDate {
+	font-size: x-small;
+	float: left;
+	position: absolute;
+	top: 0;
+	font-style: italic;
+}
+
+.subDateMain {
+	font-size: small;
+	float: right;
+	position: absolute;
+	top: 0;
+	font-style: italic;
+	position: absolute;
+}
+
+.playerName {
+	vertical-align: bottom;
+	width: 100%;
+}
+.oneSet {
+	background-image: img/half1.png;
+}
+
+.matchPlayers {
+	font-size: large;
+	font-weight: bold;
+	text-align: center;
+	vertical-align: bottom;
+	padding-left: 5px;
+	width: 100%;
+	display: block;
+	padding-left: 5px;
+}
+
+/*-------------------------
+	The order form #61a1bc
+--------------------------*/
+* {
+	/*	background-color: #61a1bc;*/
+	font-family: 'Cookie';
+	font-weight: normal;
+	text-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.color-demo {
+	float: right;
+	width: 20px;
+	height: 20px;
+	border-width: 1px;
+	border-style: solid;
+	border-radius: 4px;
+	background: gray;
+}
+
+.col-demo {
+	padding: 5px;
+	width: 100%;
+	border: 1px solid #ddd;
+	border-radius: 2px;
+	background: #f7f7f7;
+	text-align: center;
+}
+
+.caiu {
+	color: #E81E1E;
+}
+
+.subiu {
+	color: #22BF22;
+}
+
+.manteve {
+	color: #F2E74B;
+}

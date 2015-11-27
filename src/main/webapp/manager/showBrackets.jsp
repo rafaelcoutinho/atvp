@@ -52,13 +52,13 @@
 					if (match == null) {
 						teams.push([ "", "", schematch.id ]);
 					} else {
-						var one ="";
-						if(match.playerOne){
-							one=match.playerOne.name+" "+match.playerOne.email;
+						var one = "";
+						if (match.playerOne) {
+							one = match.playerOne.name + " " + match.playerOne.email;
 						}
-						var two ="";
-						if(match.playerTwo){
-							two=match.playerTwo.name+" "+match.playerTwo.email;
+						var two = "";
+						if (match.playerTwo) {
+							two = match.playerTwo.name + " " + match.playerTwo.email;
 						}
 						teams.push([ one, two, schematch.id ]);
 					}
@@ -71,17 +71,30 @@
 					console.log("save ", data)
 					for (var j = 0; j < data.teams.length; j++) {
 						console.log(j, data.teams[j])
+						var result = data.results[j];
+						console.log("res " + j, result)
 						if (data.teams[j][0] != "" || data.teams[j][1] != "") {
 
 							var p = getParticipant(data.teams[j][0]);
-							if (p) {
-								criaMatch(data.teams[j][2], p.participant.id, null);
-							} else {
-								console.log("nao achou ", data.teams[j][0])
+
+							var p1 = null;
+							if (p && p.participant && p.participant.id) {
+								p1 = p.participant.id;
+							}
+							p = getParticipant(data.teams[j][1]);
+							var p2 = null;
+							if (p && p.participant && p.participant.id) {
+								p2 = p.participant.id;
+							}
+
+							if (p1 || p2) {
+
+								criaMatch(data.teams[j][2], p1, p2);
 							}
 
 						}
 					}
+
 				}, /* without save() labels are disabled */
 				decorator : {
 					edit : acEditFn,
@@ -129,7 +142,7 @@
 	}
 	var reverseData = {};
 	/* Data for autocomplete */
-	var acData = [ "kr:MC", "ca:HuK", "se:Naniwa", "pe:Fenix", "us:IdrA", "tw:Sen", "fi:Naama" ]
+	var acData = []
 
 	/* If you call doneCb([value], true), the next edit will be automatically 
 	   activated. This works only in the first round. */
@@ -159,6 +172,54 @@
 			container.append('<img src="site/png/'+fields[0]+'.png"> ').append(fields[1])
 		}*/
 	}
+	function listPlayers() {
+		$.ajax({
+			type : "GET",
+			contentType : 'application/json',
+			url : "/rest/player?action=list",
+
+			success : function(data) {
+				console.log("p", data);
+				$("#players").autocomplete({
+					source : data,
+					minLength : 0,
+					focus : function(event, ui) {
+						$("#players").val(ui.item.name);
+						return false;
+					},
+					select : function(event, ui) {
+						$("#players").val(ui.item.name);
+						$("#playersid").val(ui.item.id);
+						return false;
+					}
+				}).autocomplete("instance")._renderItem = function(ul, item) {
+					return $("<li>").append("<a>" + item.name + "</a>").appendTo(ul);
+				};
+
+			},
+			dataType : "json"
+		});
+		return false;
+
+	};
+	$(document).ready(function() {
+		listPlayers();
+	});
+	function addPlayer() {
+		$.ajax({
+			type : "POST",
+			contentType : 'application/json',
+			url : "/endpoints/tournament/${param.id}/players/" + $("[name='player']").val(),
+
+			success : function(data) {
+				console.log("vai setar ", data);
+
+			},
+			dataType : "json"
+		});
+		return false;
+
+	};
 </script>
 </head>
 <body>
@@ -166,6 +227,16 @@
 		<div class="demo"></div>
 
 	</div>
+	<hr>
+	<form action="#" id="associa">
+		<div class="ui-widget">
+			<label for="players">Adicionar Jogador: </label> <input id="players"
+				type="text" name="playerName"> <input type="hidden"
+				id="playersid" name="player"> <input type="hidden"
+				id="tournamentId" name="tournament" value="${param.id}"> <input
+				type="button" onclick="addPlayer()" value="Participar">
+		</div>
+	</form>
 
 
 </body>

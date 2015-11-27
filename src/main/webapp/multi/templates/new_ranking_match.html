@@ -1,0 +1,35 @@
+<ion-modal-view> <ion-header-bar>
+<h1 class="title">Nova Partida</h1>
+<div class="buttons">
+	<button class="button button-clear" ng-click="closeForm()">Cancelar</button>
+</div>
+</ion-header-bar> <ion-content>
+
+<div class="list">
+	<label class="item item-input item-icon-right"> <span
+		class="input-label">Jogador 1</span>
+
+		<button class="button button-icon icon ion-person-add item-icon-right"
+			ng-click="openSearch()"></button></label>
+
+	<div class="card">
+		<div class="item item-text-wrap">
+			<span style="font-size: x-large; font-weight: bold;">{{nmatch.playerTwoName}}</span><br>
+			<span style="font-size: small; padding-left: 5px;">{{nmatch.playerTwoEmail}}</span>
+		</div>
+	</div>
+
+	<form ng-submit="createMatch()">
+		<label class="item item-input"> <span class="input-label">Data:</span>
+			<input type="datetime-local" ng-model="nmatch.date">
+		</label>
+		<div class="padding">
+			<div>
+				<span class="error_section">{{error_section}}</span>
+			</div>
+			<label class="item">
+				<button class="button button-block button-positive" type="submit">Criar</button>
+			</label>
+		</div>
+	</form>
+</ion-content> </ion-modal-view>

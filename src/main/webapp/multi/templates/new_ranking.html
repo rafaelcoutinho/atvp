@@ -1,0 +1,28 @@
+<ion-modal-view> <ion-header-bar>
+<h1 class="title">Novo Ranking</h1>
+<div class="buttons">
+	<button class="button button-clear" ng-click="closeForm()">Cancelar</button>
+</div>
+</ion-header-bar> <ion-content>
+<form ng-submit="createRanking()">
+	<div class="list">
+
+
+		<label class="item item-input"> <span class="input-label">Nome:
+		</span> <input type="text" ng-model="ranking.title">
+
+		</label> <label class="item item-input"> <span class="input-label">Descrição:
+		</span> <input type="text" ng-model="ranking.description">
+
+		</label>
+		<div class="padding">
+			<div>
+				<span class="error_section">{{error_section}}</span>
+			</div>
+			<label class="item">
+				<button class="button button-block button-positive" type="submit">Criar</button>
+			</label>
+		</div>
+	</div>
+</form>
+</ion-content> </ion-modal-view>

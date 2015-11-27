@@ -36,6 +36,11 @@
 				$("<option></option>") // Yes you can do this.
 				.text(item.name).val(item.id));
 				playerHash[item.id] = item;
+				
+
+				$("#tourManagerList").append( // Append an object to the inside of the select box
+						$("<option></option>") // Yes you can do this.
+						.text(item.name).val(item.id));
 
 			});
 		});
@@ -69,6 +74,8 @@
 				$("#rankingList").append( // Append an object to the inside of the select box
 				$("<option></option>") // Yes you can do this.
 				.text(item.title).val(item.id));
+			
+				
 
 			});
 		});
@@ -126,7 +133,14 @@
 				type="submit" value="Listar">
 		</form>
 	</div>
+	<div>
+		<h2>Gerente Torneio</h2>
+		<form action="/manager/tournamentList.jsp" method="get">
+			Manager <select
+				id="tourManagerList" name="idManager"></select><input type="submit">
+		</form>
 
+	</div>
 	<div>
 		<h2>Gerente de Ranking</h2>
 		<form action="/rest/player" method="post">

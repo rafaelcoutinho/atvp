@@ -16,9 +16,11 @@ public class TournmentJsonSerializer extends JsonSerializer<Tournament> {
 			SerializerProvider arg2) throws IOException,
 			JsonProcessingException {
 		jgen.writeStartObject();
+
 		jgen.writeStringField("name", tourn.getName());
 		jgen.writeNumberField("rounds", tourn.getNumberOfRounds());
 		jgen.writeNumberField("idManager", tourn.getIdManager());
+		jgen.writeNumberField("id", tourn.getId());
 		jgen.writeEndObject();
 
 	}

@@ -1,0 +1,29 @@
+<ion-modal-view> <ion-header-bar>
+<h1 class="title">Editar {{set.number}}o Set</h1>
+<div class="buttons">
+	<button class="button button-icon ion-trash-a" ng-click="removeSet()"></button>
+</div>
+</ion-header-bar> <ion-content>
+<div class="row row-center">
+	<div class="col ">{{match.playerOne.name}}</div>
+	<div class="col item-input-inset">
+		<label class="item-input-wrapper"> <input type="number"
+			ng-model="editingSet.playerOneGames" placeholder="Games">
+		</label>
+	</div>
+</div>
+<div class="row row-bottom">
+	<div class="col ">{{match.playerTwo.name}}</div>
+	<div class="col item-input-inset">
+		<label class="item-input-wrapper"> <input type="number"
+			ng-model="editingSet.playerTwoGames" placeholder="Games">
+		</label>
+	</div>
+</div>
+<div>
+	<span ng-model="error_update_set""></span>
+</div>
+<button class="button button-full button-calm"
+	ng-click="finishSetUpdates()">OK</button>
+
+</ion-content> </ion-modal-view>

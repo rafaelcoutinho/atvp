@@ -1,0 +1,25 @@
+<ion-view view-title="Cadastrar"> <ion-content padding="2">
+<h1>Cadastre-se</h1>
+<form ng-submit="doCreateUser()">
+	<div class="list">
+		<label class="item item-input"> <span class="input-label">Nome</span>
+			<input type="text" ng-model="signData.name">
+
+		</label> <label class="item item-input"> <span class="input-label">E-mail</span>
+			<input type="email" ng-model="signData.email">
+		</label><label class="item item-input"> <span class="input-label">Senha</span>
+			<input type="password" ng-model="signData.password">
+		</label>
+		<div class="padding">
+			<div>
+				<span class="error_forget">{{signup_error}}</span><span
+					class="valid_forget">{{signup_success}}</span>
+			</div>
+			<label class="item">
+				<button class="button button-block button-positive" type="submit">Cadastrar</button>
+			</label>
+		</div>
+</form>
+<label class="item"><button
+		class="button button-block button-positive" ng-click="doLoginFB()">Conectar
+		com facebook</button></label> </ion-content> </ion-view>

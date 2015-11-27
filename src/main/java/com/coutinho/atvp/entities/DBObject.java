@@ -112,8 +112,7 @@ public abstract class DBObject<E> {
 						&& f.getParameterTypes().length == 0) {
 
 					if (isTransient(f.getAnnotations())) {
-						System.out.println("Ignorado " + f.getName()
-								+ " transient");
+						//
 						continue;
 					}
 					String propName = f.getName().substring(3, 4);
@@ -123,8 +122,7 @@ public abstract class DBObject<E> {
 
 					if (isTransient(this.getClass().getDeclaredField(propName)
 							.getAnnotations())) {
-						System.out.println("Ignorado " + propName
-								+ " @transient");
+
 						continue;
 					}
 					Object obj = convertProp(propName, f.getReturnType());

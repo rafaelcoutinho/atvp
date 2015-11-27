@@ -1,0 +1,24 @@
+<ion-view title="Ranking"> <ion-content padding="2">
+<ion-refresher pulling-text="Puxe para atualizar..."
+	on-refresh="doRefresh()"> </ion-refresher>
+
+<button
+	class="button button-full icon-left ion-plus-circled button-calm"
+	ng-click="addNewMatch()" ng-if="showNewMatch()">Nova partida</button>
+
+<div class="list card">
+	<div class="item">
+		<h3>{{ranking.title}}</h3>
+		<h2>{{ranking.description}}</h2>
+
+	</div>
+
+	<div class="item item-body">
+		<p>Partidas</p>
+		<ion-list> <ion-item ng-repeat="match in currMatches"
+			href="#/app/match/{{match.ik}}"> <span class="subDate">{{match.date
+			| date:'dd-MM-yyyy HH:mm'}}</span> <span class="matchPlayers">{{match.playerOne.name}}
+			vs {{match.playerTwo.name}}</span></ion-item> </ion-list>
+	</div>
+</div>
+</ion-content> </ion-view>

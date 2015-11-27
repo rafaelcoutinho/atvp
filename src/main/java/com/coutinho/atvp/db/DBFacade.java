@@ -53,6 +53,50 @@ public class DBFacade {
 		datastore.put(entity);
 	}
 
+	private int listScheduledMatch(Long tournmentId, Long idMatch, Long id) {
+
+		Filter tourFilter = new FilterPredicate("tournmentId",
+				FilterOperator.EQUAL, tournmentId);
+
+		Filter matchFilter = new FilterPredicate("matchId",
+				FilterOperator.EQUAL, idMatch);
+		Filter myFilter1 = CompositeFilterOperator.and(tourFilter, matchFilter);
+		if (id != null) {
+			Filter roundFilter = new FilterPredicate("id",
+					FilterOperator.NOT_EQUAL, id);
+			myFilter1 = CompositeFilterOperator.and(tourFilter, roundFilter,
+					matchFilter);
+		}
+
+		Query q = new Query(ScheduledMatch.class.getSimpleName());
+		q.setFilter(myFilter1);
+
+		return datastore.prepare(q).countEntities(
+				FetchOptions.Builder.withDefaults());
+	}
+
+	public Key persist(ScheduledMatch p) throws EntityValidationException {
+		if (listScheduledMatch(p.getTournmentId(), p.getMatchId(), p.getId()) > 0) {
+			throw new IllegalArgumentException(
+					"Já existe uma partida agenda para este tornoeio com o mesmo match");
+		}
+
+		Entity player = new Entity(p.getKind());
+		// check if there is any other
+
+		if (p.getKey() != null) {
+			player = new Entity(p.getKey());
+		} else if (p.getId() != null) {
+			player = new Entity(p.getKind(), p.getId());
+		}
+
+		p.setProperties(player);
+		p.validate(datastore);
+		Key k = datastore.put(player);
+		p.setKey(k);
+		return k;
+	}
+
 	public Key persist(DBObject p) throws EntityValidationException {
 		Entity player = new Entity(p.getKind());
 		if (p.getKey() != null) {
@@ -119,7 +163,7 @@ public class DBFacade {
 		Key k = KeyFactory.createKey(ScheduledMatch.class.getSimpleName(), id);
 		ScheduledMatch sm = (ScheduledMatch) (get(k, ScheduledMatch.class));
 		if (fetchall) {
-			sm.setTournment(getTournament(sm.getId()));
+			sm.setTournment(getTournament(sm.getTournmentId()));
 			if (sm.getMatchId() != null) {
 				sm.setMatch(getMatch(sm.getMatchId(), true));
 			}
@@ -375,6 +419,36 @@ public class DBFacade {
 		PreparedQuery pq = datastore.prepare(q);
 
 		return pq.asIterable();
+	}
+
+	public List<Entity> listRoundMatches(Long tournmentId, Integer round) {
+
+		Filter tourFilter = new FilterPredicate("tournmentId",
+				FilterOperator.EQUAL, tournmentId);
+		Filter roundFilter = new FilterPredicate("round", FilterOperator.EQUAL,
+				round);
+		Filter matchFilter = new FilterPredicate("matchId",
+				FilterOperator.NOT_EQUAL, null);
+		Filter myFilter1 = CompositeFilterOperator.and(tourFilter, roundFilter,
+				matchFilter);
+		Query q = new Query(ScheduledMatch.class.getSimpleName());
+		q.setFilter(myFilter1);
+		List<Long> matchIds = new ArrayList<Long>();
+		Iterable<Entity> sms = datastore.prepare(q).asIterable();
+		for (Iterator iterator = sms.iterator(); iterator.hasNext();) {
+			ScheduledMatch sm = new ScheduledMatch((Entity) iterator.next());
+			matchIds.add(sm.getMatchId());
+		}
+		if (matchIds.isEmpty()) {
+			return new ArrayList<Entity>();
+		}
+		Filter matchesFilter = new FilterPredicate("key.id", FilterOperator.IN,
+				matchIds);
+		Query matchQuery = new Query(Match.class.getSimpleName());
+		matchQuery.setFilter(matchesFilter);
+
+		return datastore.prepare(matchQuery).asList(
+				FetchOptions.Builder.withDefaults());
 	}
 
 	public Integer getAllMatchesBetween(Key p1, Key p2) {

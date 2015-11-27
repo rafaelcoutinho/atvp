@@ -1,0 +1,8 @@
+<ion-view view-title="Rankings"> < <ion-content padding="2">
+<ion-refresher pulling-text="Puxe para atualizar..."
+	on-refresh="doRefresh()"> </ion-refresher>
+<button class="button button-full icon-left ion-plus button-calm"
+	ng-click="addNewRanking()" ng-show="showNewRanking()">Novo
+	Ranking</button>
+<ion-list> <ion-item ng-repeat="ranking in rankings"
+	href="#/app/ranking/{{ranking.id}}"> {{ranking.title}} </ion-item> </ion-list> </ion-content> </ion-view>

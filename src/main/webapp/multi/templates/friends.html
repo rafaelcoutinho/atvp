@@ -1,0 +1,49 @@
+<uib-tabset> <uib-tab heading="Meus adversários">
+<div class="row row-top">
+
+	<div class="col col-demo" style="font-weight: bold;">Rival</div>
+	<div class="col col-demo" style="font-weight: bold;">Jogos contra</div>
+</div>
+<ion-list> <ion-item ng-repeat="player in friends"
+	style="padding: 0;border: 0;">
+<div class="row row-top " style="padding: 0;">
+
+	<div class="col col-demo" style="height: 47px;">
+		<img class="imageProfile .item-avatar"
+			style="max-width: 60px; max-height: 30px;"
+			ng-src="{{player.imageProfile}}"> {{player.name}}
+	</div>
+	<div class="col col-demo" style="height: 47px;">{{player.matches}}</div>
+</div>
+</ion-item> </ion-list> </uib-tab> <uib-tab heading="Convites para rivalidade">
+<div class="row row-top">
+
+	<div class="col col-demo" style="font-weight: bold;">Nome</div>
+	<div class="col col-demo" style="font-weight: bold;">E-mail</div>
+
+</div>
+
+<ion-list> <ion-item ng-repeat="invitation in invitations"
+	style="padding: 0;border: 0;">
+<div class="row row-top " style="padding: 0;"
+	>
+	<div class="col col-demo">{{invitation.inviter.name}}</div>
+	<div class="col col-demo">{{invitation.inviter.email}}</div>
+
+</div>
+</ion-item> </ion-list> </uib-tab> <uib-tab heading="Meus convidados">
+<div class="row row-top">
+
+
+	<div class="col col-demo" style="font-weight: bold;">E-mail</div>
+	<div class="col col-demo" style="font-weight: bold;">Data convite</div>
+</div>
+<ion-list> <ion-item ng-repeat="invitation in inviteds"
+	style="padding: 0;border: 0;">
+<div class="row row-top " style="padding: 0;">
+	<div class="col col-demo">{{invitation.to}}</div>
+	<div class="col col-demo">{{invitation.since | date:'dd-MM-yyyy
+		HH:mm'}}</div>
+
+</div>
+</ion-item> </ion-list> </uib-tab> </uib-tabset>

@@ -1,0 +1,63 @@
+<ion-view view-title="Home"> <ion-content padding="2">
+<ion-refresher pulling-text="Puxe para atualizar..."
+	on-refresh="doRefresh()"> </ion-refresher>
+<h1>ATVP</h1>
+<div class="list" ng-show="isLoggedIn()">
+	<label class="item item-input"> <div style="max-height: 40%;">
+			<img class="imageProfile .item-avatar"
+				style="max-width: 60px; max-height: 100px;"
+				ng-model="playerData.imageProfile"
+				ng-src="{{playerData.imageProfile}}"> <span
+				style="vertical-align: top; font-size: 20pt">{{playerData.name}}</span>
+		</div></label>
+
+	<div>Minhas estatísticas:</div>
+	<div class="row row-top">
+		<div class="col "></div>
+		<div class="col col-demo">Mês</div>
+
+		<div class="col col-demo">Ano</div>
+		<div class="col col-demo">Carreira</div>
+	</div>
+	<div class="row row-center">
+		<div class="col col-demo">Partidas</div>
+		<div class="col col-demo">
+			{{playerData.stats|totalperiod:'totalMatches':'currentMonth'}} <span
+				class="{{playerData.stats|matchcomp:'currentMonth'}}" />
+		</div>
+
+		<div class="col col-demo">
+			{{playerData.stats|totalperiod:'totalMatches':'currentYear'}}</div>
+		<div class="col col-demo">{{playerData.stats|totalperiod:'totalMatches':'allTimes'}}</div>
+	</div>
+	<div class="row row-center">
+		<div class="col col-demo">Sets</div>
+		<div class="col col-demo">
+			{{playerData.stats|totalsetwon:'currentMonth'}} <span
+				class="{{playerData.stats|setcomp:'currentMonth'}}" />
+		</div>
+
+		<div class="col col-demo">
+			{{playerData.stats|totalsetwon:'currentYear'}} <span
+				class="{{playerData.stats|setcomp:'currentYear'}}" />
+		</div>
+		<div class="col col-demo">{{playerData.stats|totalsetwon:'allTimes'}}</div>
+	</div>
+
+	<div class="row row-bottom">
+		<div class="col col-demo">Games</div>
+		<div class="col col-demo">
+			{{playerData.stats|totalgameswon:'currentMonth'}} <span
+				class="{{playerData.stats|gamescomp:'currentMonth'}}" />
+		</div>
+		<div class="col col-demo">
+			{{playerData.stats|totalgameswon:'currentYear'}} <span
+				class="{{playerData.stats|gamescomp:'currentYear'}}" />
+		</div>
+		<div class="col col-demo">{{playerData.stats|totalgameswon:'allTimes'}}</div>
+	</div>
+
+
+</div>
+<span ng-controller="AppCtrl" ng-show="!isLoggedIn()">Seja bem
+	vindo. Utilize o menu para fazer seu login ou cadastro.</span> </ion-content> </ion-view>

@@ -38,7 +38,9 @@ Nao é gerente!
 				rounds : $("[name='rounds']").val()
 			}),
 			success : function(data) {
-				console.log("",data);
+				console.log("Criou torneio",data);
+				$( "#tournamentName" ).val(data.name );
+				$( "#tournamentId" ).val(data.id );
 			},
 			dataType : "json"
 		});
@@ -52,14 +54,71 @@ Nao é gerente!
 			url : "/endpoints/tournament/"+$("[name='tournament']").val()+"/players/"+$("[name='player']").val(),
 			
 			success : function(data) {
-				console.log("",data);
+				console.log("vai setar ",data);
+				
 				
 			},
 			dataType : "json"
 		});
 		return false;
 
-	}
+	};
+	function listPlayers() {
+		$.ajax({
+			type : "GET",
+			contentType : 'application/json',
+			url : "/rest/player?action=list",
+			
+			success : function(data) {
+				console.log("p",data);
+				$( "#players" ).autocomplete({
+				      source: data,
+				      minLength: 0,				      
+				      focus: function( event, ui ) {
+				        $( "#players" ).val( ui.item.name );
+				        return false;
+				      },
+				      select: function( event, ui ) {
+				          $( "#players" ).val( ui.item.name );
+				          $( "#playersid" ).val( ui.item.id );			          
+				          return false;
+				        }
+				    }).autocomplete( "instance" )._renderItem = function( ul, item ) {
+				        return $( "<li>" )
+				        .append( "<a>" + item.name + "</a>" )
+				        .appendTo( ul );
+				    };
+				
+			},
+			dataType : "json"
+		});
+		return false;
+
+	};
+	function listTournments() {
+		$.ajax({
+			type : "GET",
+			contentType : 'application/json',
+			url : "/endpoints/tournament?id=${param.idManager}",
+			
+			success : function(data) {
+				console.log("p",data);
+				for ( var tourId in data) {
+					var tour = data[tourId];
+					$("#tournments").append("<a href='/manager/showBrackets.jsp?id="+tour.id+"'>"+tour.name+"</a><br>");
+				}
+				
+			},
+			dataType : "json"
+		});
+		return false;
+
+	};
+	$( document ).ready(function() {
+	    console.log( "ready!" );
+	    listPlayers();
+	    listTournments();
+	});
 </script>
 Criar torneio
 <br>
@@ -70,9 +129,16 @@ Criar torneio
 		name="manager" value="${param.idManager}"> <input
 		type="button" onclick="saveTour()" value="Criar">
 </form>
+<div id="tournments"></div>
+
 
 <form action="#" id="associa">
-	PlayerId: <input type="text" name="player"><br> <input
-		type="text" name="tournament"> <input type="button"
-		onclick="addPlayer()" value="Participar">
+	<div class="ui-widget">
+		<label for="players">Jogador: </label> <input id="players" type="text"
+			name="playerName"> <input type="hidden" id="playersid"
+			name="player"> <input type="text" id="tournamentName"
+			disabled="disabled"> <input type="hidden" id="tournamentId"
+			name="tournament"> <input type="button" onclick="addPlayer()"
+			value="Participar">
+	</div>
 </form>

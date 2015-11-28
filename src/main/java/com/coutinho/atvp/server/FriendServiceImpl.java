@@ -193,7 +193,7 @@ public class FriendServiceImpl extends BaseServlet {
 
 							new SendEmail().sendEmail("Olá " + invitedPLayer.getName()
 
-							+ ",<br>" + inviter.getName() + " quer ser seu rival no ATVP, Associação de Tenistas Virtuais Pro. Entre no aplicativo e aceite ou recuse o convite de rivalidade.<br>", "Ranking de Tênis Virtual", invited, invited);
+							+ ",<br>" + inviter.getName() + " quer ser seu rival no ATVP, Associação de Tênistas Virtuais Pro. Entre no <a href='http://1-dot-tenis-virtual-players.appspot.com/multi/index.html>site mobile</a> ou pelo aplicativo Android e aceite ou recuse o convite de rivalidade.<br><br>Site mobile: <a href='http://1-dot-tenis-virtual-players.appspot.com/multi/index.html'>http://1-dot-tenis-virtual-players.appspot.com/multi/index.html</a><br><a href=\"https://play.google.com/store/apps/details?id=com.ionicframework.atvpmobile663442\"> <img alt=\"Get it on Google Play\" src=\"https://developer.android.com/images/brand/pt-br_generic_rgb_wo_45.png\" /></a>", "Ranking de Tênis Virtual", invited, invited);
 							resp.put("email", "email_sent");
 
 						} catch (Exception e1) {
@@ -224,7 +224,7 @@ public class FriendServiceImpl extends BaseServlet {
 
 				new SendEmail().sendEmail("Olá,"
 
-				+ "<br>" + p.getName() + " lhe convidou para participar do aplicativo ATVP, Associação de Tenistas Virtuais Pro. <br><a href=\"https://play.google.com/store/apps/details?id=com.ionicframework.atvpmobile663442\"> <img alt=\"Get it on Google Play\" src=\"https://developer.android.com/images/brand/pt-br_generic_rgb_wo_45.png\" /></a>.<br>", "Ranking de Tênis Virtual", invited, invited);
+				+ "<br>" + p.getName() + " lhe convidou para participar do aplicativo ATVP, Associação de Tenistas Virtuais Pro.<br><br>Acesse pelo <a href='http://1-dot-tenis-virtual-players.appspot.com/multi/index.html>site mobile</a><br><br><br> ou pelo aplicativo Android: <br><a href=\"https://play.google.com/store/apps/details?id=com.ionicframework.atvpmobile663442\"> <img alt=\"Get it on Google Play\" src=\"https://developer.android.com/images/brand/pt-br_generic_rgb_wo_45.png\" /></a>.<br>", "Ranking de Tênis Virtual", invited, invited);
 				resp.put("success", "email_sent");
 				return resp.toString();
 			} catch (Exception e1) {

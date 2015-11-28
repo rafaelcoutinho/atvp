@@ -19,34 +19,97 @@
 </head>
 
 <body ng-app="ATVPmultiApp">
-	<div ng-controller="DropdownCtrl">
 
+	<div class="bar-positive nav-bar-container" style="height: 25px"
+		nav-bar-transition="android" nav-bar-direction="none">
+		<ion-nav-back-button class="hide"></ion-nav-back-button>
+		<ion-nav-buttons side="left" class="hide"></ion-nav-buttons>
+		<ion-nav-buttons side="right" class="hide"></ion-nav-buttons>
 
-		<!-- Single button -->
-		<div class="btn-group" uib-dropdown is-open="status.isopen">
-			<button id="single-button" type="button" class="btn btn-primary"
-				uib-dropdown-toggle ng-disabled="disabled">
-				Menu <span class="caret"></span>
+		<div class="nav-bar-block" nav-bar="cached">
+			<ion-header-bar
+				class="bar-positive bar bar-header disable-user-behavior"
+				align-title="left">
+			<button ng-click="$ionicGoBack($event)"
+				class="button back-button hide buttons  button-clear header-item">
+				<i class="icon ion-arrow-left-c"></i> <span class="back-text"></span>
 			</button>
-			<ul class="uib-dropdown-menu" role="menu"
-				aria-labelledby="single-button">
-				<li role="menuitem" ng-show="isLoggedIn()"><a href="#/dash">Dash</a></li>
-				<li role="menuitem" ng-show="isLoggedIn()"><a href="#/profile">Meu
-						perfil</a></li>
-				<li role="menuitem" ng-show="isLoggedIn()"><a href="#/matches">Partidas</a></li>
-				<li role="menuitem" ng-show="isLoggedIn()"><a href="#/friends">Adversários</a></li>
-				<li role="menuitem" ng-show="isLoggedIn()"><a href="#/rankings">Rankings</a></li>
-				<li class="divider"></li>
-				<li role="menuitem" ng-show="isLoggedIn()"><a href="#"
-					ng-click="logoff()">Sair</a></li>
-				<li role="menuitem" ng-show="!isLoggedIn()"><a href="#/login">Login</a></li>
-				<li role="menuitem" ng-show="!isLoggedIn()"><a href="#/signup">
-						Cadastrar </a></li>
+			<div class="buttons buttons-left header-item">
+				<span class="left-buttons">
+					<button class="button button-icon button-clear ion-navicon"
+						menu-toggle="left"></button>
+				</span>
+			</div>
+			<div class="title title-left header-item"></div>
+			<div class="buttons buttons-right header-item">
+				<span class="right-buttons">
+					<button class="button button-icon icon ion-ribbon-b ng-hide"></button>
+					<button class="button button-icon icon ion-plus-circled ng-hide"></button>
+					<button
+						class="button button-icon icon ion-person-add item-icon-right ng-hide"></button>
+
+				</span>
+			</div>
+			</ion-header-bar>
+		</div>
+		<div class="nav-bar-block" nav-bar="active"
+			ng-controller="DropdownCtrl">
+			<ion-header-bar
+				class="bar-positive bar bar-header disable-user-behavior"
+				align-title="left">
+			<button
+				class="button back-button hide buttons  button-clear header-item">
+				<i class="icon ion-arrow-left-c"></i> <span class="back-text"></span>
+			</button>
+			<div class="buttons buttons-left header-item">
+				<span class="left-buttons"> <!-- Single button -->
+					<div class="btn-group" uib-dropdown is-open="status.isopen">
+						<button id="single-button" type="button"
+							class="button button-icon button-clear ion-navicon activated"
+							uib-dropdown-toggle ng-disabled="disabled"></button>
+						<ul class="uib-dropdown-menu" role="menu"
+							aria-labelledby="single-button">
+							<li role="menuitem" ng-show="isLoggedIn()"><a href="#/dash">Dash</a></li>
+							<li role="menuitem" ng-show="isLoggedIn()"><a
+								href="#/profile">Meu perfil</a></li>
+							<li role="menuitem" ng-show="isLoggedIn()"><a
+								href="#/matches">Partidas</a></li>
+							<li role="menuitem" ng-show="isLoggedIn()"><a
+								href="#/friends">Adversários</a></li>
+							<li role="menuitem" ng-show="isLoggedIn()"><a
+								href="#/rankings">Rankings</a></li>
+							<li class="divider"></li>
+							<li role="menuitem" ng-show="isLoggedIn()"><a href="#"
+								ng-click="logoff()">Sair</a></li>
+							<li role="menuitem" ng-show="!isLoggedIn()"><a
+								href="#/login">Login</a></li>
+							<li role="menuitem" ng-show="!isLoggedIn()"><a
+								href="#/signup"> Cadastrar </a></li>
 
 
-			</ul>
+						</ul>
+					</div>
+				</span>
+			</div>
+			<div class="title title-left header-item"
+				style="left: 50px; right: 173px;">{{title}} </div>
+			<div class="buttons buttons-right header-item">
+				<span class="right-buttons">
+					<button class="button button-icon icon ion-plus-circled"
+						ng-controller="MatchesCtrl" ng-show="showNewMatch()"
+						ng-click="addNewMatch()"></button>
+
+					<button class="button button-icon icon ion-ribbon-b ng-hide"></button>
+					<button class="button button-icon icon ion-plus-circled ng-hide"></button>
+					<button
+						class="button button-icon icon ion-person-add item-icon-right ng-hide"></button>
+
+				</span>
+			</div>
+			</ion-header-bar>
 		</div>
 	</div>
+
 
 	<div ng-view></div>
 

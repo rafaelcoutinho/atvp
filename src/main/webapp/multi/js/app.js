@@ -62,7 +62,12 @@ spApp.config(function($routeProvider, $httpProvider) {
 	}).when('/matches', {
 		controller : 'MatchesCtrl',
 		templateUrl : 'templates/matches.html'
-	}).when('/dash', {
+	}).when('/match/:mId', {
+		controller : 'MatchCtrl',
+		templateUrl : 'templates/match.html'
+	})
+
+	.when('/dash', {
 		controller : 'AppCtrl',
 		templateUrl : 'templates/dash.html'
 	}).otherwise({
@@ -76,8 +81,13 @@ spApp.config(function($routeProvider, $httpProvider) {
 
 });
 
-spApp.controller('MatchesCtrl', [ '$scope', 'Match', 'loginService', function($scope, Match, loginService) {
+spApp.controller('MatchesCtrl', [ '$scope', '$route', '$location', '$window', 'Match', 'loginService', function($scope, $route, $location, $window, Match, loginService) {
+
 	$scope.weekCount = 0;
+	$scope.view = function(m) {
+		console.log("asdfasdf ", m)
+		$window.location.href = '#match/' + m.id;
+	}
 	$scope.doRefresh = function() {
 		$scope.matches = Match.query({
 			idPlayer : loginService.getUser() != null ? loginService.getUser().id : null
@@ -89,14 +99,161 @@ spApp.controller('MatchesCtrl', [ '$scope', 'Match', 'loginService', function($s
 	$scope.moveNext = function() {
 		$scope.weekCount--;
 	};
+	$scope.showNewMatch = function() {
+
+		return $location.path() == '/matches';
+	}
 	$scope.doRefresh();
 } ]);
-spApp.controller('FriendsCtrl', [ '$scope', '$http', 'Friendship', 'loginService', '$timeout', '$uibModal', 'atvpServer', function($scope, $http, Friendship, loginService, $timeout, $uibModal, atvpServer) {
+
+spApp.controller('MatchCtrl',  [ '$scope', '$route', '$location', '$window', 'Match', 'loginService', function($scope, $route, $location, $window, Match, loginService) {
+	var changed = -1;
+	
+	$scope.error_update_set="";
+// $scope.confirmSetRemove=function(n){
+// var confirmPopup = $ionicPopup.confirm({
+// title : 'Apagar Set',
+// template : 'Deseja apagar este Set?'
+// });
+// confirmPopup.then(function(res) {
+// if (res) {
+// var success=function(resp){
+// $scope.refreshMatch();
+// $scope.updateSet.hide();
+// };
+// var error=function(resp){
+// console.log(resp);
+// $scope.error_update_set="Falhou ao tentar remover o set. Tente novamente.";
+// };
+// Match.removeSet($scope.match.sets[n],success,error);
+// } else {
+// }
+// });
+// }
+//	
+//	
+// $ionicModal.fromTemplateUrl('templates/update_set.html', {
+// scope : $scope
+// }).then(function(modal) {
+// $scope.updateSet = modal;
+// });
+// $scope.removeSet=function(){
+// $scope.confirmSetRemove($scope.editingSet.number);
+// };
+// $scope.finishSetUpdates = function() {
+// var success=function(resp){
+// console.log(resp)
+// $scope.match.sets[$scope.editingSet.number]=(resp);
+// changed=-1;
+// };
+// var error=function(resp){
+// console.log(resp)
+//			
+// };
+// Match.updateSet($scope.editingSet,success,error);
+// $scope.updateSet.hide();
+// };
+//	
+	$scope.showSetUpdate=function(s){
+		$scope.editingSet=s;
+		$scope.updateSet.show();
+	}
+	
+	$scope.wasChanged=function(n){
+			return (n==changed);
+	}
+	$scope.persistSet=function(n){
+		var success=function(resp){
+			console.log(resp)
+			$scope.match.sets[n]=(resp);
+			changed=-1;
+		};
+		var error=function(resp){
+			console.log(resp)
+			
+		};
+		Match.updateSet($scope.match.sets[n],success,error);
+	}
+	$scope.setChanged=function(n){
+		changed=n;
+	}
+	$scope.addSet = function(){
+		Match.addSet({
+			number:$scope.match.sets.length,
+			playerOneGames:0,
+			playerTwoGames:0,
+			key: $route.current.params.mId
+		},function(resp){
+			console.log(resp)
+			$scope.match.sets.push(resp);
+			$scope.showSetUpdate(resp);
+		});
+	};
+	
+
+	$scope.deleteMatch = function() {
+		var confirmPopup = $ionicPopup.confirm({
+			title : 'Cancelar partida',
+			template : 'Deseja realmente cancelar esta partida?'
+		});
+		confirmPopup.then(function(res) {
+			if (res) {
+				Match.delete({mId : $route.current.params.mId});
+			} else {
+			}
+		});
+		
+		
+	}
+	
+	
+	$scope.showDeleteMatch = function() {
+		
+		if($location.path() == '/match'){
+			if (loginService.getUser() != null && $scope.match!=null) {
+				if($scope.match.ranking==null){
+					if($scope.match.idPlayerOne==loginService.getUser().id || $scope.match.idPlayerTwo==loginService.getUser().id ){
+						return true;
+					}
+				}else{
+					if($scope.match.ranking.idManager==loginService.getUser().id ){
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	};
+	
+	$scope.refreshMatch = function(){
+		if (loginService.getUser() != null) {
+			if ($route.current.params.mId) {
+				$scope.match = Match.get({
+					mId : $route.current.params.mId,
+					idPlayer : loginService.getUser().id
+				}
+			);
+				
+			}
+		}
+	}
+	console.log($route.current.params);
+	$scope.$on('$routeChangeSuccess', function(){
+		var path = $location.path();
+		console.log(path);
+		$scope.showDeleteMatch();
+		
+
+	});
+	$scope.refreshMatch();
+	
+}]);
+spApp.controller('FriendsCtrl', [ '$scope', '$route','$http', 'Friendship', 'loginService', '$timeout', '$uibModal', 'atvpServer', function($scope, $route,$http, Friendship, loginService, $timeout, $uibModal, atvpServer) {
 	$scope.showFriendInvitation = function() {
-		if (!$state.current || !$state.current.name) {
+		if (!$route.current || !$route.current.name) {
 			return false;
 		}
-		if ($state.current.name == ('app.friends')) {
+		if ($route.current.name == ('app.friends')) {
 			return true;
 		}
 	};
@@ -218,7 +375,7 @@ spApp.controller('ProfileCtrl', [ '$scope', '$log', '$http', '$window', 'loginSe
 		return editing;
 	}
 	$scope.showEdit = function() {
-		return $state.current.name == 'profile';
+		return $route.current.name == 'profile';
 	};
 	$scope.edit = function() {
 		editing = true;
@@ -269,8 +426,8 @@ spApp.controller('ProfileCtrl', [ '$scope', '$log', '$http', '$window', 'loginSe
 } ]);
 spApp.controller('LoginCtrl', function($scope, $log, $http, $window, loginService, statsService, atvpServerSecure) {
 	$scope.loginData = {
-		username : 'rafael.coutinho@gmail.com',
-		password : 'senhadificildemais'
+		username : '',
+		password : ''
 	};
 	// Perform the login action when the user submits the login form
 	$scope.doLogin = function() {
@@ -362,8 +519,7 @@ spApp.controller('LoginCtrl', function($scope, $log, $http, $window, loginServic
 									mId : data.id
 								});
 								loginService.setUser($scope.playerData);
-								$scope.closeLogin();
-								$state.go('app.dash');
+								$window.location.href = '#dash';
 
 							}).error(function(data, status, headers, config) {
 								// called asynchronously if an error occurs
@@ -391,8 +547,8 @@ spApp.controller('LoginCtrl', function($scope, $log, $http, $window, loginServic
 	}
 });
 
-spApp.controller('DropdownCtrl', [ '$scope', '$log', 'loginService', function($scope, $log, loginService) {
-
+spApp.controller('DropdownCtrl', [ '$scope', '$log','$window', 'loginService', function($scope, $log,$window, loginService) {
+	$scope.title = "Home";
 	$scope.status = {
 		isopen : false
 	};
@@ -407,6 +563,25 @@ spApp.controller('DropdownCtrl', [ '$scope', '$log', 'loginService', function($s
 		$event.preventDefault();
 		$event.stopPropagation();
 		$scope.status.isopen = !$scope.status.isopen;
+	};
+	$scope.logoff = function(){
+		$scope.playerData =  {
+				stats:{
+					allTimes:{
+						
+					},
+				currentMonth:{
+						
+					},
+				currentYear:{
+						
+					}
+				},
+				imageProfile: "img/profile.png"
+		};
+		
+		loginService.setUser(null);
+		$window.location.href = '#login';
 	};
 
 } ]);
@@ -448,7 +623,7 @@ spApp.filter('toWeekStr', function(dateService) {
 	return function(weekCount, scope) {
 
 		if (weekCount) {
-			console.log("w", weekCount, "s", scope.weekCount)
+
 			var dates = dateService.getStartEndDatesForPreviousWeek(weekCount);
 
 			return "Semana do " + dates.end.getDate() + "/" + (dates.end.getMonth() + 1) + " à " + dates.start.getDate() + "/" + (dates.start.getMonth() + 1);
@@ -477,6 +652,260 @@ spApp.filter('toWeekStr', function(dateService) {
 				}
 			}
 			return 
+
+			
+
+						
+
+			
+
+									
+
+			
+
+						
+
+			
+
+												
+
+			
+
+						
+
+			
+
+									
+
+			
+
+						
+
+			
+
+															
+
+			
+
+						
+
+			
+
+									
+
+			
+
+						
+
+			
+
+												
+
+			
+
+						
+
+			
+
+									
+
+			
+
+						
+
+			
+
+																		
+
+			
+
+						
+
+			
+
+									
+
+			
+
+						
+
+			
+
+												
+
+			
+
+						
+
+			
+
+									
+
+			
+
+						
+
+			
+
+															
+
+			
+
+						
+
+			
+
+									
+
+			
+
+						
+
+			
+
+												
+
+			
+
+						
+
+			
+
+									
+
+			
+
+						
+
+			
+
+																					
+
+			
+
+						
+
+			
+
+									
+
+			
+
+						
+
+			
+
+												
+
+			
+
+						
+
+			
+
+									
+
+			
+
+						
+
+			
+
+															
+
+			
+
+						
+
+			
+
+									
+
+			
+
+						
+
+			
+
+												
+
+			
+
+						
+
+			
+
+									
+
+			
+
+						
+
+			
+
+																		
+
+			
+
+						
+
+			
+
+									
+
+			
+
+						
+
+			
+
+												
+
+			
+
+						
+
+			
+
+									
+
+			
+
+						
+
+			
+
+															
+
+			
+
+						
+
+			
+
+									
+
+			
+
+						
+
+			
+
+												
+
+			
+
+						
+
+			
+
+									
+
+			
+
+						
+
+			
 
 		}
 	}

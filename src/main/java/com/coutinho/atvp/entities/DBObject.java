@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.json.JSONObject;
 
 import com.coutinho.atvp.exception.EntityValidationException;
+import com.coutinho.atvp.server.BaseServlet;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
@@ -38,8 +39,7 @@ public abstract class DBObject<E> {
 	public DBObject(HttpServletRequest req) {
 		fromRequest(req);
 		if (req.getParameter("id") != null) {
-			id = KeyFactory.createKey(getKind(),
-					Long.valueOf(req.getParameter("id")));
+			id = KeyFactory.createKey(getKind(), Long.valueOf(req.getParameter("id")));
 		}
 	}
 
@@ -57,6 +57,7 @@ public abstract class DBObject<E> {
 
 	public DBObject(Entity entity) {
 		id = (entity.getKey());
+		System.err.println("id " + id);
 		fromEntity(entity.getProperties());
 	}
 
@@ -67,18 +68,14 @@ public abstract class DBObject<E> {
 		for (int i = 0; i < fields.length; i++) {
 			Method f = fields[i];
 			try {
-				if (f.getName().equals("getClass")
-						|| f.getName().equals("getKey")) {
+				if (f.getName().equals("getClass") || f.getName().equals("getKey")) {
 					continue;
 				}
-				if (f.getName().startsWith("get")
-						&& f.getParameterTypes().length == 0) {
+				if (f.getName().startsWith("get") && f.getParameterTypes().length == 0) {
 					String propName = f.getName().substring(3, 4);
-					propName = propName.toLowerCase()
-							+ f.getName().substring(4);
+					propName = propName.toLowerCase() + f.getName().substring(4);
 					Object obj = f.invoke(this);
 					if (obj instanceof DBObject) {
-
 						obj = ((DBObject) obj).toJSON();
 
 					}
@@ -103,13 +100,11 @@ public abstract class DBObject<E> {
 			Method f = methods[i];
 			try {
 				String mname = f.getName();
-				if (mname.equals("getClass") || mname.equals("getId")
-						|| mname.equals("getKind")) {
+				if (mname.equals("getClass") || mname.equals("getId") || mname.equals("getKind")) {
 					continue;
 				}
 
-				if (f.getName().startsWith("get")
-						&& f.getParameterTypes().length == 0) {
+				if (f.getName().startsWith("get") && f.getParameterTypes().length == 0) {
 
 					if (isTransient(f.getAnnotations())) {
 						//
@@ -117,11 +112,9 @@ public abstract class DBObject<E> {
 					}
 					String propName = f.getName().substring(3, 4);
 
-					propName = propName.toLowerCase()
-							+ f.getName().substring(4);
+					propName = propName.toLowerCase() + f.getName().substring(4);
 
-					if (isTransient(this.getClass().getDeclaredField(propName)
-							.getAnnotations())) {
+					if (isTransient(this.getClass().getDeclaredField(propName).getAnnotations())) {
 
 						continue;
 					}
@@ -142,8 +135,7 @@ public abstract class DBObject<E> {
 
 	public boolean isTransient(Annotation[] as) {
 		for (int j = 0; j < as.length; j++) {
-			if (javax.persistence.Transient.class
-					.equals(as[j].annotationType())) {
+			if (javax.persistence.Transient.class.equals(as[j].annotationType())) {
 
 				return true;
 			}
@@ -159,9 +151,15 @@ public abstract class DBObject<E> {
 
 		for (Iterator iterator = m.keySet().iterator(); iterator.hasNext();) {
 			String key = (String) iterator.next();
+			if (key.equalsIgnoreCase("key") || key.equalsIgnoreCase("ik")) {
+				System.err.println("nao deve setar o campo " + key);
+				continue;
+			}
 			String mname = key.charAt(0) + "";
+
 			Logger LOG = Logger.getLogger("TESTE");
 			mname = "set" + mname.toUpperCase() + key.substring(1);
+			System.err.println("buscando  " + mname);
 			Method me = null;
 			try {
 				Method[] ms = this.getClass().getMethods();
@@ -171,12 +169,14 @@ public abstract class DBObject<E> {
 						break;
 					}
 				}
+
 				if (me == null) {
+					System.err.println("sem metodo?");
 					throw new NoSuchMethodException(mname);
 				} else {
 					try {
 						if ("undefined".equals((String) m.get(key))) {
-
+							System.err.println("valor indefinido para " + key);
 							LOG.log(Level.FINER, "valor indefinido para " + key);
 
 							continue;
@@ -186,12 +186,14 @@ public abstract class DBObject<E> {
 					}
 
 					if (me.getParameterTypes()[0].equals(String.class)) {
+						System.err.println("String... " + key + "=" + m.get(key));
 						if (m.get(key) instanceof String[]) {
 							me.invoke(this, ((String[]) m.get(key))[0]);
 						} else {
 							me.invoke(this, (String) m.get(key));
 						}
 					} else if (me.getParameterTypes()[0].equals(Integer.class)) {
+						System.err.println("Integer... " + key + "=" + m.get(key));
 						Object val = m.get(key);
 						Integer value = null;
 						if (m.get(key) instanceof Integer) {
@@ -203,6 +205,7 @@ public abstract class DBObject<E> {
 						}
 						me.invoke(this, value);
 					} else if (me.getParameterTypes()[0].equals(Long.class)) {
+						System.err.println("long... " + key + "=" + m.get(key));
 						Object val = m.get(key);
 						Long value = null;
 						if (m.get(key) instanceof Long) {
@@ -210,26 +213,29 @@ public abstract class DBObject<E> {
 						} else if (m.get(key) instanceof String) {
 							value = Long.valueOf((String) val);
 						}
+						System.err.println("invocou com " + value);
 						me.invoke(this, value);
 					} else if (m.get(key) instanceof DBObject) {
 						LOG.log(Level.FINER, "podia pegar aqui");
+						System.err.println("m.get(key) instanceof DBObject");
 
 					} else {
+						System.err.println("invocou pra setar " + key + "=" + m.get(key));
 						me.invoke(this, m.get(key));
 					}
 				}
 			} catch (NoSuchMethodException e) {
-				LOG.log(Level.FINER, "Nao encontrou o set de " + mname + " de "
-						+ this.getKind());
+				LOG.log(Level.FINER, "Nao encontrou o set de " + mname + " de " + this.getKind());
+				BaseServlet.logException("Nao encontrou o set de " + mname + " de " + this.getKind(), e);
 
 			} catch (IllegalArgumentException e) {
-				LOG.log(Level.FINER, "IllegalArgumentException " + mname + " "
-						+ m.get(key));
+				LOG.log(Level.FINER, "IllegalArgumentException " + mname + " " + m.get(key));
 
+				BaseServlet.logException("IllegalArgumentException " + mname + " " + m.get(key), e);
 			} catch (Exception e) {
 				LOG.log(Level.FINER, "Excecao  " + key + " " + m.get(key));
 
-				e.printStackTrace();
+				BaseServlet.logException("Excecao  " + key + " " + m.get(key), e);
 			}
 
 		}
@@ -252,8 +258,7 @@ public abstract class DBObject<E> {
 		return id.getId();
 	}
 
-	public void validate(DatastoreService datastore)
-			throws EntityValidationException {
+	public void validate(DatastoreService datastore) throws EntityValidationException {
 		return;
 	}
 

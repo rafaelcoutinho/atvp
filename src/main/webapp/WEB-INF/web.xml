@@ -39,6 +39,10 @@
 		<servlet-name>friendshipServlet</servlet-name>
 		<servlet-class>com.coutinho.atvp.server.FriendServiceImpl</servlet-class>
 	</servlet>
+	<servlet>
+		<servlet-name>Backuper</servlet-name>
+		<servlet-class>com.coutinho.atvp.server.Backuper</servlet-class>
+	</servlet>
 
 
 	<servlet>
@@ -49,6 +53,10 @@
 			<param-value>com.coutinho.atvp.RestletJaxRSApplicationConverter</param-value>
 		</init-param>
 	</servlet>
+	<servlet-mapping>
+		<servlet-name>Backuper</servlet-name>
+		<url-pattern>/rest/backuper</url-pattern>
+	</servlet-mapping>
 
 	<servlet-mapping>
 		<servlet-name>RestletServlet</servlet-name>

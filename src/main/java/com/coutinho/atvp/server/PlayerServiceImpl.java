@@ -24,8 +24,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 
 public class PlayerServiceImpl extends BaseServlet {
 
-	protected JSONObject doLoad(HttpServletRequest req)
-			throws EntityNotFoundException {
+	protected JSONObject doLoad(HttpServletRequest req) throws EntityNotFoundException {
 		Long id = Long.valueOf(req.getParameter("id"));
 		Player r = (Player) (DBFacade.getInstance().get(id, Player.class));
 		JSONObject json = r.toJSON();
@@ -54,29 +53,20 @@ public class PlayerServiceImpl extends BaseServlet {
 		return "áéíãôpoxa";
 	}
 
-	public String dorememberpwd(HttpServletRequest req)
-			throws EntityNotFoundException {
+	public String dorememberpwd(HttpServletRequest req) throws EntityNotFoundException {
 		String email = (req.getParameter("email"));
 		Player r = (Player) (DBFacade.getInstance().getPlayerByEmail(email));
-		String newPWD = "a" + ((int) Math.random() * 100) + "b"
-				+ ((int) Math.random() * 100);
+		String newPWD = "a" + ((int) Math.random() * 100) + "b" + ((int) Math.random() * 100);
 
 		r.setPassword(SignUpServiceImpl.getMd5edPwd(newPWD));
 		JSONObject json = new JSONObject();
 		try {
 			DBFacade.getInstance().persist(r);
-			new SendEmail()
-					.sendEmail(
-							"Olá "
-									+ r.getName()
-									+ ",<br>"
+			new SendEmail().sendEmail("Olá " + r.getName() + ",<br>"
 
-									+ " você solicitou uma nova senha no ATVP. <br>Segue a nova senha gerada: '"
-									+ newPWD
-									+ "'<br>Utilize-a para se autenticar no ATVP.<br>",
+			+ " você solicitou uma nova senha no ATVP. <br>Segue a nova senha gerada: '" + newPWD + "'<br>Utilize-a para se autenticar no ATVP.<br>",
 
-							"Ranking de Tênis Virtual", r.getEmail(),
-							r.getName());
+			"Ranking de Tênis Virtual", r.getEmail(), r.getName());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -85,33 +75,30 @@ public class PlayerServiceImpl extends BaseServlet {
 		return json.toString();
 	}
 
-	public String doloadfriends(HttpServletRequest req)
-			throws EntityNotFoundException {
+	public String doloadfriends(HttpServletRequest req) throws EntityNotFoundException {
 		try {
 			Long id = Long.valueOf(req.getParameter("id"));
 			Player r = (Player) (DBFacade.getInstance().get(id, Player.class));
 
 			JSONArray friendsArr = new JSONArray();
-			Iterable<Entity> friends = DBFacade.getInstance().getAllFriends(
-					r.getKey());
+			Iterable<Entity> friends = DBFacade.getInstance().getAllFriends(r.getKey());
 
-			for (Iterator iterator = friends.iterator(); iterator.hasNext();) {
+			for (Iterator<Entity> iterator = friends.iterator(); iterator.hasNext();) {
 				Entity entity = (Entity) iterator.next();
+				System.err.println("key " + KeyFactory.keyToString(entity.getKey()));
 				Friendship fship = new Friendship(entity);
+
+				System.err.println("f " + fship.getId() + " " + entity);
 				Player friend = null;
 				if (fship.getIdPlayerOne().equals(r.getKey())) {
-					friend = (Player) DBFacade.getInstance().get(
-							fship.getIdPlayerTwo(), Player.class);
+					friend = (Player) DBFacade.getInstance().get(fship.getIdPlayerTwo(), Player.class);
 				} else {
-					friend = (Player) DBFacade.getInstance().get(
-							fship.getIdPlayerOne(), Player.class);
+					friend = (Player) DBFacade.getInstance().get(fship.getIdPlayerOne(), Player.class);
 				}
 				JSONObject friendJson = friend.toJSON();
-
-				int matches = DBFacade.getInstance().getAllMatchesBetween(
-						r.getKey(), friend.getKey());
-				matches += DBFacade.getInstance().getAllMatchesBetween(
-						friend.getKey(), r.getKey());
+				System.err.println("friend " + friend.getId());
+				int matches = DBFacade.getInstance().getAllMatchesBetween(r.getKey(), friend.getKey());
+				matches += DBFacade.getInstance().getAllMatchesBetween(friend.getKey(), r.getKey());
 
 				friendJson.put("matches", matches);
 
@@ -120,22 +107,19 @@ public class PlayerServiceImpl extends BaseServlet {
 
 			return friendsArr.toString();
 		} catch (Exception e) {
-			System.err.println("Erro " + e.getMessage());
-			e.printStackTrace();
+			logException("Erro carregando lista de amigos de " + req.getParameter("id"), e);
 			return null;
 		}
 
 	}
 
-	public String doloadwithstats(HttpServletRequest req)
-			throws EntityNotFoundException {
+	public String doloadwithstats(HttpServletRequest req) throws EntityNotFoundException {
 		try {
 			Long id = Long.valueOf(req.getParameter("id"));
 			Player r = (Player) (DBFacade.getInstance().get(id, Player.class));
 
 			JSONObject json = r.toJSON();
-			Iterable<Entity> playerMatches = DBFacade.getInstance()
-					.getAllMatchesForPlayer(r.getId());
+			Iterable<Entity> playerMatches = DBFacade.getInstance().getAllMatchesForPlayer(r.getId());
 			Stats allTimes = new Stats();
 			Stats currentMonth = new Stats();
 			Stats currentYear = new Stats();
@@ -154,8 +138,7 @@ public class PlayerServiceImpl extends BaseServlet {
 			monthStart.set(Calendar.MINUTE, 0);
 			monthStart.set(Calendar.SECOND, 0);
 
-			for (Iterator iterator = playerMatches.iterator(); iterator
-					.hasNext();) {
+			for (Iterator iterator = playerMatches.iterator(); iterator.hasNext();) {
 				Entity entity = (Entity) iterator.next();
 				Match match = new Match(entity);
 				updateMatchStats(match);
@@ -166,26 +149,20 @@ public class PlayerServiceImpl extends BaseServlet {
 				if (monthStart.getTimeInMillis() < (match.getDate())) {
 					currentMonth.totalMatches++;
 				}
-				List<Entity> setEntities = DBFacade.getInstance()
-						.getAllSetsFrom(match);
-				for (Iterator iterator2 = setEntities.iterator(); iterator2
-						.hasNext();) {
+				List<Entity> setEntities = DBFacade.getInstance().getAllSetsFrom(match);
+				for (Iterator iterator2 = setEntities.iterator(); iterator2.hasNext();) {
 					Entity entity2 = (Entity) iterator2.next();
 					Set set = new Set(entity2);
 					if (match.getIdPlayerOne().equals(r.getId())) {
 						allTimes.totalGamesWon += set.getPlayerOneGames();
 						allTimes.totalGamesLost += set.getPlayerTwoGames();
 						if (yearStart.getTimeInMillis() < match.getDate()) {
-							currentYear.totalGamesWon += set
-									.getPlayerOneGames();
-							currentYear.totalGamesLost += set
-									.getPlayerTwoGames();
+							currentYear.totalGamesWon += set.getPlayerOneGames();
+							currentYear.totalGamesLost += set.getPlayerTwoGames();
 						}
 						if (monthStart.getTimeInMillis() < (match.getDate())) {
-							currentMonth.totalGamesWon += set
-									.getPlayerOneGames();
-							currentMonth.totalGamesLost += set
-									.getPlayerTwoGames();
+							currentMonth.totalGamesWon += set.getPlayerOneGames();
+							currentMonth.totalGamesLost += set.getPlayerTwoGames();
 						}
 
 						if (set.getPlayerOneGames() > set.getPlayerTwoGames()) {
@@ -208,16 +185,12 @@ public class PlayerServiceImpl extends BaseServlet {
 					} else {
 
 						if (yearStart.getTimeInMillis() < match.getDate()) {
-							currentYear.totalGamesWon += set
-									.getPlayerTwoGames();
-							currentYear.totalGamesLost += set
-									.getPlayerOneGames();
+							currentYear.totalGamesWon += set.getPlayerTwoGames();
+							currentYear.totalGamesLost += set.getPlayerOneGames();
 						}
 						if (monthStart.getTimeInMillis() < (match.getDate())) {
-							currentMonth.totalGamesWon += set
-									.getPlayerTwoGames();
-							currentMonth.totalGamesLost += set
-									.getPlayerOneGames();
+							currentMonth.totalGamesWon += set.getPlayerTwoGames();
+							currentMonth.totalGamesLost += set.getPlayerOneGames();
 						}
 						allTimes.totalGamesWon += set.getPlayerTwoGames();
 						allTimes.totalGamesLost += set.getPlayerOneGames();
@@ -258,17 +231,13 @@ public class PlayerServiceImpl extends BaseServlet {
 
 	}
 
-	public static void updateMatchStats(Match match)
-			throws EntityValidationException {
+	public static void updateMatchStats(Match match) throws EntityValidationException {
 		long oldEnough = System.currentTimeMillis() - (1000 * 60 * 60 * 24 / 4);
-		if (match.getDate() < oldEnough
-				&& MatchState.Pending.equals(match.getMatchState())) {
-			List<Entity> setEntities = DBFacade.getInstance().getAllSetsFrom(
-					match);
+		if (match.getDate() < oldEnough && MatchState.Pending.equals(match.getMatchState())) {
+			List<Entity> setEntities = DBFacade.getInstance().getAllSetsFrom(match);
 			int totalSetsPlayerTwo = 0;
 			int totalSetsPlayerOne = 0;
-			for (Iterator iterator2 = setEntities.iterator(); iterator2
-					.hasNext();) {
+			for (Iterator iterator2 = setEntities.iterator(); iterator2.hasNext();) {
 				Entity entity2 = (Entity) iterator2.next();
 				Set set = new Set(entity2);
 				if (set.getPlayerOneGames() > set.getPlayerTwoGames()) {
@@ -290,19 +259,16 @@ public class PlayerServiceImpl extends BaseServlet {
 		}
 	}
 
-	public String doupdatelicense(HttpServletRequest req)
-			throws EntityNotFoundException, EntityValidationException {
+	public String doupdatelicense(HttpServletRequest req) throws EntityNotFoundException, EntityValidationException {
 		Player m = null;
 		if (req.getParameter("ik") != null) {
 			Key k = KeyFactory.stringToKey(req.getParameter("ik"));
 			m = (Player) (DBFacade.getInstance().get(k, Player.class));
 
 		} else if (req.getParameter("email") != null) {
-			m = DBFacade.getInstance().getPlayerByEmail(
-					req.getParameter("email"));
+			m = DBFacade.getInstance().getPlayerByEmail(req.getParameter("email"));
 		} else {
-			throw new RuntimeException(
-					"Cadastro deve serfeito via servido signup");
+			throw new RuntimeException("Cadastro deve serfeito via servido signup");
 		}
 		m.fromRequest(req);
 		DBFacade.getInstance().persist(m);
@@ -310,8 +276,7 @@ public class PlayerServiceImpl extends BaseServlet {
 		return m.toJSONString();
 	}
 
-	protected long doPersist(HttpServletRequest req)
-			throws EntityNotFoundException, EntityValidationException {
+	protected long doPersist(HttpServletRequest req) throws EntityNotFoundException, EntityValidationException {
 		Player m = null;
 		if (req.getParameter("id") != null) {
 			Long id = Long.valueOf(req.getParameter("id"));
@@ -325,8 +290,7 @@ public class PlayerServiceImpl extends BaseServlet {
 	}
 
 	protected JSONArray doList(HttpServletRequest resp) {
-		Iterable<Entity> rankings = DBFacade.getInstance().queryAll(
-				Player.class);
+		Iterable<Entity> rankings = DBFacade.getInstance().queryAll(Player.class);
 		JSONArray list = new JSONArray();
 		for (Iterator iterator = rankings.iterator(); iterator.hasNext();) {
 			Entity type = (Entity) iterator.next();

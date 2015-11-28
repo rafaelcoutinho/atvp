@@ -18,42 +18,36 @@ import com.coutinho.atvp.exception.EntityValidationException;
 
 public abstract class BaseServlet extends HttpServlet {
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
 		String action = req.getParameter("action");
 		if ("list".equals(action)) {
-
 			resp.getWriter().print(doList(req).toString());
 		} else if ("get".equals(action)) {
 			try {
 				JSONObject json = doLoad(req);
 				resp.getWriter().print(json);
 			} catch (Exception e) {
-				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-						e.getMessage());
+				logException("Erro no metodo " + action, e);
+				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 			}
 		} else if (action != null) {
 			try {
-				Method m = this.getClass().getMethod("do" + action,
-						HttpServletRequest.class);
+				Method m = this.getClass().getMethod("do" + action, HttpServletRequest.class);
+				System.err.println("Metodo " + m + " " + req);
 				String r = (String) m.invoke(this, req);
+				if (r == null) {
+					throw new NullPointerException("Resposta do metodo " + action + " nula!");
+				}
 				resp.getWriter().print(r);
 			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
+				logException("Nao encontrou o metodo " + action, e);
 				resp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
 			} catch (SecurityException e) {
-				e.printStackTrace();
+				logException("Falha seguranca ", e);
 				resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 			} catch (Exception e) {
-				Logger LOG = Logger.getLogger("TESTE");
-				LOG.warning("FALHOU");
-				e.printStackTrace();
-				System.err.println(e.getMessage());
-				for (int i = 0; i < e.getStackTrace().length; i++) {
-					System.err.println(e.getStackTrace()[i].getClassName()
-							+ ":" + e.getStackTrace()[i].getLineNumber());
-				}
+				logException("Falha genercia ", e);
 				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 		} else {
@@ -63,14 +57,12 @@ public abstract class BaseServlet extends HttpServlet {
 	}
 
 	@Override
-	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
+	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		resp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
 	}
 
 	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String action = req.getParameter("action");
 
 		if ("persist".equals(action)) {
@@ -98,8 +90,7 @@ public abstract class BaseServlet extends HttpServlet {
 			}
 		} else if (action != null) {
 			try {
-				Method m = this.getClass().getMethod("do" + action,
-						HttpServletRequest.class);
+				Method m = this.getClass().getMethod("do" + action, HttpServletRequest.class);
 				String r = (String) m.invoke(this, req);
 				resp.getWriter().print(r);
 			} catch (NoSuchMethodException e) {
@@ -112,25 +103,29 @@ public abstract class BaseServlet extends HttpServlet {
 				e.printStackTrace();
 				System.err.println(e.getMessage());
 				for (int i = 0; i < e.getStackTrace().length; i++) {
-					System.err.println(e.getStackTrace()[i].getClassName()
-							+ ":" + e.getStackTrace()[i].getLineNumber());
+					System.err.println(e.getStackTrace()[i].getClassName() + ":" + e.getStackTrace()[i].getLineNumber());
 				}
 				resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-				resp.getWriter().print(
-						"{'error':'unknown_error','msg':'" + e.getMessage()
-								+ "'}");
+				resp.getWriter().print("{'error':'unknown_error','msg':'" + e.getMessage() + "'}");
 			}
 		} else {
 			resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
 		}
 	}
 
-	protected abstract long doPersist(HttpServletRequest req)
-			throws EntityNotFoundException, EntityValidationException;
+	protected abstract long doPersist(HttpServletRequest req) throws EntityNotFoundException, EntityValidationException;
 
-	protected abstract JSONObject doLoad(HttpServletRequest req)
-			throws EntityNotFoundException;
+	protected abstract JSONObject doLoad(HttpServletRequest req) throws EntityNotFoundException;
 
 	protected abstract JSONArray doList(HttpServletRequest req);
+
+	public static void logException(String w, Exception e) {
+		System.err.println(w);
+		System.err.println(e.getMessage());
+		for (int i = 0; i < e.getStackTrace().length && i < 4; i++) {
+			System.err.println(e.getStackTrace()[i].getClassName() + ":" + e.getStackTrace()[i].getLineNumber());
+		}
+
+	}
 
 }

@@ -21,17 +21,14 @@ import com.google.appengine.api.datastore.KeyFactory;
 
 public class FriendServiceImpl extends BaseServlet {
 
-	protected JSONObject doLoad(HttpServletRequest req)
-			throws EntityNotFoundException {
+	protected JSONObject doLoad(HttpServletRequest req) throws EntityNotFoundException {
 		Long id = Long.valueOf(req.getParameter("id"));
-		Friendship r = (Friendship) (DBFacade.getInstance().get(id,
-				Friendship.class));
+		Friendship r = (Friendship) (DBFacade.getInstance().get(id, Friendship.class));
 		JSONObject json = r.toJSON();
 		return json;
 	}
 
-	public String dosavefriendship(HttpServletRequest req)
-			throws EntityNotFoundException {
+	public String dosavefriendship(HttpServletRequest req) throws EntityNotFoundException {
 		try {
 			Long id1 = Long.valueOf(req.getParameter("idPlayerOne"));
 			Key p1key = KeyFactory.createKey(Player.class.getSimpleName(), id1);
@@ -46,37 +43,30 @@ public class FriendServiceImpl extends BaseServlet {
 		}
 	}
 
-	public String doacceptinvitation(HttpServletRequest req)
-			throws EntityNotFoundException {
+	public String doacceptinvitation(HttpServletRequest req) throws EntityNotFoundException {
 		boolean accepted = true;
 		JSONObject resp = handleAcceptDeclineInvitation(req, accepted);
 		return resp.toString();
 
 	}
 
-	public String dodeclineinvitation(HttpServletRequest req)
-			throws EntityNotFoundException {
+	public String dodeclineinvitation(HttpServletRequest req) throws EntityNotFoundException {
 		boolean accepted = false;
 		JSONObject resp = handleAcceptDeclineInvitation(req, accepted);
 		return resp.toString();
 
 	}
 
-	private JSONObject handleAcceptDeclineInvitation(HttpServletRequest req,
-			boolean accepted) {
+	private JSONObject handleAcceptDeclineInvitation(HttpServletRequest req, boolean accepted) {
 		JSONObject resp = new JSONObject();
 		try {
 			Long id1 = Long.valueOf(req.getParameter("id"));
 			Long idPlayer = Long.valueOf(req.getParameter("idPlayer"));
-			Key inviteKey = KeyFactory.createKey(
-					Invitation.class.getSimpleName(), id1);
-			Key playerKey = KeyFactory.createKey(Player.class.getSimpleName(),
-					idPlayer);
-			Invitation invitation = (Invitation) DBFacade.getInstance().get(
-					inviteKey, Invitation.class);
+			Key inviteKey = KeyFactory.createKey(Invitation.class.getSimpleName(), id1);
+			Key playerKey = KeyFactory.createKey(Player.class.getSimpleName(), idPlayer);
+			Invitation invitation = (Invitation) DBFacade.getInstance().get(inviteKey, Invitation.class);
 			if (accepted) {
-				Friendship fship = new Friendship(invitation.getFrom(),
-						playerKey);
+				Friendship fship = new Friendship(invitation.getFrom(), playerKey);
 				DBFacade.getInstance().persist(fship);
 				resp.put("success", "friendship_ok");
 			} else {
@@ -96,12 +86,10 @@ public class FriendServiceImpl extends BaseServlet {
 		return resp;
 	}
 
-	public String doloadinvitations(HttpServletRequest req)
-			throws EntityNotFoundException {
+	public String doloadinvitations(HttpServletRequest req) throws EntityNotFoundException {
 		try {
 			String invitedEmail = req.getParameter("email");
-			Iterable<Entity> list = DBFacade.getInstance()
-					.listInvitationsByEmail(invitedEmail);
+			Iterable<Entity> list = DBFacade.getInstance().listInvitationsByEmail(invitedEmail);
 			Logger LOG = Logger.getLogger("TESTE");
 			LOG.warning("inviter email " + invitedEmail);
 			JSONArray invitations = new JSONArray();
@@ -109,9 +97,7 @@ public class FriendServiceImpl extends BaseServlet {
 				Invitation inv = new Invitation(entity);
 				JSONObject invite = inv.toJSON();
 
-				invite.put("inviter",
-						DBFacade.getInstance().get(inv.getFrom(), Player.class)
-								.toJSON());
+				invite.put("inviter", DBFacade.getInstance().get(inv.getFrom(), Player.class).toJSON());
 				invitations.put(invite);
 			}
 
@@ -122,8 +108,7 @@ public class FriendServiceImpl extends BaseServlet {
 			JSONObject resp = new JSONObject();
 			System.err.println(e.getMessage());
 			for (int i = 0; i < e.getStackTrace().length; i++) {
-				System.err.println(e.getStackTrace()[i].getClassName() + ":"
-						+ e.getStackTrace()[i].getLineNumber());
+				System.err.println(e.getStackTrace()[i].getClassName() + ":" + e.getStackTrace()[i].getLineNumber());
 			}
 			try {
 				resp.put("error", "failed");
@@ -136,16 +121,13 @@ public class FriendServiceImpl extends BaseServlet {
 		}
 	}
 
-	public String doloadinvitationssent(HttpServletRequest req)
-			throws EntityNotFoundException {
+	public String doloadinvitationssent(HttpServletRequest req) throws EntityNotFoundException {
 		try {
 			Long idPlayer = Long.valueOf(req.getParameter("id"));
 
-			Key playerKey = KeyFactory.createKey(Player.class.getSimpleName(),
-					idPlayer);
+			Key playerKey = KeyFactory.createKey(Player.class.getSimpleName(), idPlayer);
 
-			Iterable<Entity> list = DBFacade.getInstance()
-					.listInvitationsByInviter(playerKey);
+			Iterable<Entity> list = DBFacade.getInstance().listInvitationsByInviter(playerKey);
 			Logger LOG = Logger.getLogger("TESTE");
 			JSONArray invitationsSent = new JSONArray();
 			for (Entity entity : list) {
@@ -161,8 +143,7 @@ public class FriendServiceImpl extends BaseServlet {
 			JSONObject resp = new JSONObject();
 			System.err.println(e.getMessage());
 			for (int i = 0; i < e.getStackTrace().length; i++) {
-				System.err.println(e.getStackTrace()[i].getClassName() + ":"
-						+ e.getStackTrace()[i].getLineNumber());
+				System.err.println(e.getStackTrace()[i].getClassName() + ":" + e.getStackTrace()[i].getLineNumber());
 			}
 			try {
 				resp.put("error", "failed");
@@ -175,8 +156,7 @@ public class FriendServiceImpl extends BaseServlet {
 		}
 	}
 
-	public String doinvite(HttpServletRequest req)
-			throws EntityNotFoundException {
+	public String doinvite(HttpServletRequest req) throws EntityNotFoundException {
 		JSONObject resp = new JSONObject();
 		String invited = req.getParameter("invited");
 		Key pkey = null;
@@ -191,10 +171,8 @@ public class FriendServiceImpl extends BaseServlet {
 			if (invited != null) {
 				invited = req.getParameter("invited").toLowerCase();
 				if (DBFacade.getInstance().getPlayerByEmail(invited) != null) {
-					Player inviter = (Player) DBFacade.getInstance().get(pkey,
-							Player.class);
-					Player invitedPLayer = (Player) DBFacade.getInstance()
-							.getPlayerByEmail(invited);
+					Player inviter = (Player) DBFacade.getInstance().get(pkey, Player.class);
+					Player invitedPLayer = (Player) DBFacade.getInstance().getPlayerByEmail(invited);
 					System.err.println(invitedPLayer);
 					System.err.println(invitedPLayer.getEmail());
 					System.err.println(invitedPLayer.getKey());
@@ -203,31 +181,19 @@ public class FriendServiceImpl extends BaseServlet {
 					System.err.println(inviter.getEmail());
 					System.err.println(inviter.getKey());
 
-					if (DBFacade.getInstance().getFriendShip(inviter.getKey(),
-							invitedPLayer.getKey()) != null
-							|| DBFacade.getInstance().getFriendShip(
-									invitedPLayer.getKey(), inviter.getKey()) != null) {
+					if (DBFacade.getInstance().getFriendShip(inviter.getKey(), invitedPLayer.getKey()) != null || DBFacade.getInstance().getFriendShip(invitedPLayer.getKey(), inviter.getKey()) != null) {
 						resp.put("error", "already_friends");
 					} else {
 
 						try {
 
-							Invitation invitation = new Invitation(pkey,
-									invited);
+							Invitation invitation = new Invitation(pkey, invited);
 
-							Key p2Key = DBFacade.getInstance().persist(
-									invitation);
+							Key p2Key = DBFacade.getInstance().persist(invitation);
 
-							new SendEmail()
-									.sendEmail(
-											"Olá "
-													+ invitedPLayer.getName()
+							new SendEmail().sendEmail("Olá " + invitedPLayer.getName()
 
-													+ ",<br>"
-													+ inviter.getName()
-													+ " quer ser seu rival no ATVP, Associação de Tenistas Virtuais Pro. Entre no aplicativo e aceite ou recuse o convite de rivalidade.<br>",
-											"Ranking de Tênis Virtual",
-											invited, invited);
+							+ ",<br>" + inviter.getName() + " quer ser seu rival no ATVP, Associação de Tenistas Virtuais Pro. Entre no aplicativo e aceite ou recuse o convite de rivalidade.<br>", "Ranking de Tênis Virtual", invited, invited);
 							resp.put("email", "email_sent");
 
 						} catch (Exception e1) {
@@ -254,17 +220,11 @@ public class FriendServiceImpl extends BaseServlet {
 
 				Key p2Key = DBFacade.getInstance().persist(invitation);
 
-				Player p = (Player) DBFacade.getInstance().get(pkey,
-						Player.class);
+				Player p = (Player) DBFacade.getInstance().get(pkey, Player.class);
 
-				new SendEmail()
-						.sendEmail(
-								"Olá,"
+				new SendEmail().sendEmail("Olá,"
 
-										+ "<br>"
-										+ p.getName()
-										+ " lhe convidou para participar do aplicativo ATVP, Associação de Tenistas Virtuais Pro. <br><a href=\"https://play.google.com/store/apps/details?id=com.ionicframework.atvpmobile663442\"> <img alt=\"Get it on Google Play\" src=\"https://developer.android.com/images/brand/pt-br_generic_rgb_wo_45.png\" /></a>.<br>",
-								"Ranking de Tênis Virtual", invited, invited);
+				+ "<br>" + p.getName() + " lhe convidou para participar do aplicativo ATVP, Associação de Tenistas Virtuais Pro. <br><a href=\"https://play.google.com/store/apps/details?id=com.ionicframework.atvpmobile663442\"> <img alt=\"Get it on Google Play\" src=\"https://developer.android.com/images/brand/pt-br_generic_rgb_wo_45.png\" /></a>.<br>", "Ranking de Tênis Virtual", invited, invited);
 				resp.put("success", "email_sent");
 				return resp.toString();
 			} catch (Exception e1) {
@@ -284,8 +244,7 @@ public class FriendServiceImpl extends BaseServlet {
 			e.printStackTrace();
 			System.err.println(e.getMessage());
 			for (int i = 0; i < e.getStackTrace().length; i++) {
-				System.err.println(e.getStackTrace()[i].getClassName() + ":"
-						+ e.getStackTrace()[i].getLineNumber());
+				System.err.println(e.getStackTrace()[i].getClassName() + ":" + e.getStackTrace()[i].getLineNumber());
 			}
 			try {
 				resp.put("error", e.getMessage());
@@ -299,53 +258,12 @@ public class FriendServiceImpl extends BaseServlet {
 
 	}
 
-	public String doloadfriends(HttpServletRequest req)
-			throws EntityNotFoundException {
-		try {
-			Long id = Long.valueOf(req.getParameter("id"));
-			Player r = (Player) (DBFacade.getInstance().get(id, Player.class));
-
-			JSONObject json = r.toJSON();
-			JSONArray friendsArr = new JSONArray();
-			Iterable<Entity> friends = DBFacade.getInstance().getAllFriends(
-					r.getKey());
-
-			for (Iterator iterator = friends.iterator(); iterator.hasNext();) {
-				Entity entity = (Entity) iterator.next();
-				Friendship fship = new Friendship(entity);
-				Player friend = null;
-				if (fship.getIdPlayerOne().equals(r.getKey())) {
-					friend = (Player) DBFacade.getInstance().get(
-							fship.getIdPlayerTwo(), Player.class);
-				} else {
-					friend = (Player) DBFacade.getInstance().get(
-							fship.getIdPlayerOne(), Player.class);
-				}
-				JSONObject friendJson = friend.toJSON();
-
-				int matches = DBFacade.getInstance().getAllMatchesBetween(
-						r.getKey(), friend.getKey());
-				matches += DBFacade.getInstance().getAllMatchesBetween(
-						friend.getKey(), r.getKey());
-
-				friendJson.put("matches", matches);
-
-				friendsArr.put(friendJson);
-			}
-
-			json.put("friends", friendsArr);
-
-			return json.toString();
-		} catch (Exception e) {
-			System.err.println("Erro " + e.getMessage());
-			e.printStackTrace();
-			return null;
-		}
+	public String doloadfriends(HttpServletRequest req) throws EntityNotFoundException {
+		return new PlayerServiceImpl().doloadfriends(req);
 
 	}
 
-	protected long doPersist(HttpServletRequest req)
-			throws EntityNotFoundException, EntityValidationException {
+	protected long doPersist(HttpServletRequest req) throws EntityNotFoundException, EntityValidationException {
 		Friendship m = null;
 		if (req.getParameter("id") != null) {
 			Long id = Long.valueOf(req.getParameter("id"));

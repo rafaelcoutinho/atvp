@@ -1,4 +1,7 @@
-/* Empty. Add your own CSS if you like */
+body > div.bar-positive.nav-bar-container{
+	height: 47px;
+}
+
 .subDate {
 	font-size: x-small;
 	float: left;
@@ -20,6 +23,7 @@
 	vertical-align: bottom;
 	width: 100%;
 }
+
 .oneSet {
 	background-image: img/half1.png;
 }

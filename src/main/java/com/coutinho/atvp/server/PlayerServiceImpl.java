@@ -33,6 +33,8 @@ public class PlayerServiceImpl extends BaseServlet {
 
 	class Stats {
 		int totalMatches = 0;
+		int totalMatchesWon = 0;
+		int totalMatchesLost = 0;
 		int totalSetWon = 0;
 		int totalSetLost = 0;
 		int totalGamesWon = 0;
@@ -41,6 +43,8 @@ public class PlayerServiceImpl extends BaseServlet {
 		public JSONObject toJson() throws JSONException {
 			JSONObject json = new JSONObject();
 			json.put("totalMatches", totalMatches);
+			json.put("totalMatchesWon", totalMatchesWon);
+			json.put("totalMatchesLost", totalMatchesLost);
 			json.put("totalSetWon", totalSetWon);
 			json.put("totalSetLost", totalSetLost);
 			json.put("totalGamesWon", totalGamesWon);
@@ -150,6 +154,7 @@ public class PlayerServiceImpl extends BaseServlet {
 					currentMonth.totalMatches++;
 				}
 				List<Entity> setEntities = DBFacade.getInstance().getAllSetsFrom(match);
+				int setsWonInMatch = 0;
 				for (Iterator iterator2 = setEntities.iterator(); iterator2.hasNext();) {
 					Entity entity2 = (Entity) iterator2.next();
 					Set set = new Set(entity2);
@@ -173,6 +178,7 @@ public class PlayerServiceImpl extends BaseServlet {
 								currentMonth.totalSetWon++;
 							}
 							allTimes.totalSetWon++;
+							setsWonInMatch++;
 						} else {
 							if (yearStart.getTimeInMillis() < match.getDate()) {
 								currentYear.totalSetLost++;
@@ -181,6 +187,7 @@ public class PlayerServiceImpl extends BaseServlet {
 								currentMonth.totalSetLost++;
 							}
 							allTimes.totalSetLost++;
+							setsWonInMatch--;
 						}
 					} else {
 
@@ -202,6 +209,7 @@ public class PlayerServiceImpl extends BaseServlet {
 								currentMonth.totalSetLost++;
 							}
 							allTimes.totalSetLost++;
+							setsWonInMatch--;
 
 						} else {
 							if (yearStart.getTimeInMillis() < match.getDate()) {
@@ -211,8 +219,25 @@ public class PlayerServiceImpl extends BaseServlet {
 								currentMonth.totalSetWon++;
 							}
 							allTimes.totalSetWon++;
-
+							setsWonInMatch++;
 						}
+					}
+				}
+				if (setsWonInMatch > 0) {
+					allTimes.totalMatchesWon++;
+					if (yearStart.getTimeInMillis() < match.getDate()) {
+						currentYear.totalMatchesWon++;
+					}
+					if (monthStart.getTimeInMillis() < (match.getDate())) {
+						currentMonth.totalMatchesWon++;
+					}
+				} else if (setsWonInMatch < 0) {
+					allTimes.totalMatchesLost++;
+					if (yearStart.getTimeInMillis() < match.getDate()) {
+						currentYear.totalMatchesLost++;
+					}
+					if (monthStart.getTimeInMillis() < (match.getDate())) {
+						currentMonth.totalMatchesLost++;
 					}
 				}
 

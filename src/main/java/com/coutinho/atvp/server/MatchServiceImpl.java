@@ -39,8 +39,7 @@ public class MatchServiceImpl extends BaseServlet {
 	private static final long serialVersionUID = 1797644948413460182L;
 	static int a = 1;
 
-	protected JSONObject doLoad(HttpServletRequest req)
-			throws EntityNotFoundException {
+	protected JSONObject doLoad(HttpServletRequest req) throws EntityNotFoundException {
 		String idRankingStr = req.getParameter("idRanking");
 		Long idRanking = null;
 		if (idRankingStr != null && idRankingStr.length() > 0) {
@@ -66,8 +65,7 @@ public class MatchServiceImpl extends BaseServlet {
 	}
 
 	@Override
-	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
+	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		JSONObject respJson = new JSONObject();
 		try {
 			Key matchKey = null;
@@ -91,15 +89,13 @@ public class MatchServiceImpl extends BaseServlet {
 		resp.getWriter().print(respJson.toString());
 	}
 
-	public String doupdatematches(HttpServletRequest req)
-			throws EntityNotFoundException {
+	public String doupdatematches(HttpServletRequest req) throws EntityNotFoundException {
 
 		return "ok";
 
 	}
 
-	public String dogetdetails(HttpServletRequest req)
-			throws EntityNotFoundException {
+	public String dogetdetails(HttpServletRequest req) throws EntityNotFoundException {
 		Key matchKey = null;
 		if (req.getParameter("key") != null) {
 			matchKey = KeyFactory.stringToKey(req.getParameter("key"));
@@ -114,11 +110,9 @@ public class MatchServiceImpl extends BaseServlet {
 
 	private JSONObject getMatchDetailsJson(Key matchKey) {
 		try {
-			Match match = (Match) DBFacade.getInstance().get(matchKey,
-					Match.class);
+			Match match = (Match) DBFacade.getInstance().get(matchKey, Match.class);
 			if (match.getRanking() != null) {
-				Ranking ranking = (Ranking) DBFacade.getInstance().get(
-						match.getIdRanking(), Ranking.class);
+				Ranking ranking = (Ranking) DBFacade.getInstance().get(match.getIdRanking(), Ranking.class);
 				match.setRanking(ranking);
 			}
 			List<Entity> sets = DBFacade.getInstance().getAllSetsFrom(match);
@@ -126,8 +120,7 @@ public class MatchServiceImpl extends BaseServlet {
 			for (Iterator iterator = sets.iterator(); iterator.hasNext();) {
 				Entity entity = (Entity) iterator.next();
 				Set set = new Set(entity);
-				List<Entity> games = DBFacade.getInstance()
-						.getAllGamesFrom(set);
+				List<Entity> games = DBFacade.getInstance().getAllGamesFrom(set);
 				JSONArray gamesArr = new JSONArray();
 				for (Iterator iterator2 = games.iterator(); iterator2.hasNext();) {
 					Entity entity2 = (Entity) iterator2.next();
@@ -139,10 +132,8 @@ public class MatchServiceImpl extends BaseServlet {
 				setsArr.put(setJson);
 
 			}
-			Player p1 = (Player) DBFacade.getInstance().get(
-					match.getIdPlayerOne(), Player.class);
-			Player p2 = (Player) DBFacade.getInstance().get(
-					match.getIdPlayerTwo(), Player.class);
+			Player p1 = (Player) DBFacade.getInstance().get(match.getIdPlayerOne(), Player.class);
+			Player p2 = (Player) DBFacade.getInstance().get(match.getIdPlayerTwo(), Player.class);
 			JSONObject json = match.toJSON();
 			json.put("playerOne", p1.toJSON());
 			json.put("playerTwo", p2.toJSON());
@@ -159,8 +150,7 @@ public class MatchServiceImpl extends BaseServlet {
 		}
 	}
 
-	public String dogetset(HttpServletRequest req)
-			throws EntityNotFoundException, EntityValidationException {
+	public String dogetset(HttpServletRequest req) throws EntityNotFoundException, EntityValidationException {
 		Long id = Long.valueOf(req.getParameter("id"));
 		Integer number = Integer.valueOf(req.getParameter("number"));
 		Key matchKey = KeyFactory.createKey(Match.class.getSimpleName(), id);
@@ -172,18 +162,15 @@ public class MatchServiceImpl extends BaseServlet {
 		return set.toJSONString();
 	}
 
-	public String dodeleteset(HttpServletRequest req)
-			throws EntityNotFoundException, EntityValidationException {
+	public String dodeleteset(HttpServletRequest req) throws EntityNotFoundException, EntityValidationException {
 		Key setKey = null;
 		if (req.getParameter("ik") != null) {
 			setKey = KeyFactory.stringToKey(req.getParameter("ik"));
 		}
 		Set set = (Set) DBFacade.getInstance().get(setKey, Set.class);
-		Match match = (Match) DBFacade.getInstance().get(setKey.getParent(),
-				Match.class);
+		Match match = (Match) DBFacade.getInstance().get(setKey.getParent(), Match.class);
 		resetMatch(match);
-		match = (Match) DBFacade.getInstance().get(setKey.getParent(),
-				Match.class);
+		match = (Match) DBFacade.getInstance().get(setKey.getParent(), Match.class);
 		List<Entity> sets = DBFacade.getInstance().getAllSetsFrom(match);
 		for (Iterator iterator = sets.iterator(); iterator.hasNext();) {
 			Entity entity = (Entity) iterator.next();
@@ -198,20 +185,17 @@ public class MatchServiceImpl extends BaseServlet {
 		return getMatchDetailsJson(match.getKey()).toString();
 	}
 
-	public String doaddgame(HttpServletRequest req)
-			throws EntityNotFoundException, EntityValidationException {
+	public String doaddgame(HttpServletRequest req) throws EntityNotFoundException, EntityValidationException {
 
 		return "";
 	}
 
-	public String doupdateset(HttpServletRequest req)
-			throws EntityNotFoundException, EntityValidationException {
+	public String doupdateset(HttpServletRequest req) throws EntityNotFoundException, EntityValidationException {
 		Key setKey = null;
 		if (req.getParameter("ik") != null) {
 			setKey = KeyFactory.stringToKey(req.getParameter("ik"));
 		}
-		Match match = (Match) DBFacade.getInstance().get(setKey.getParent(),
-				Match.class);
+		Match match = (Match) DBFacade.getInstance().get(setKey.getParent(), Match.class);
 		resetMatch(match);
 		Set set = (Set) DBFacade.getInstance().get(setKey, Set.class);
 		set.fromRequest(req);
@@ -229,8 +213,7 @@ public class MatchServiceImpl extends BaseServlet {
 		}
 	}
 
-	public String doaddset(HttpServletRequest req)
-			throws EntityNotFoundException, EntityValidationException {
+	public String doaddset(HttpServletRequest req) throws EntityNotFoundException, EntityValidationException {
 		Key matchKey = null;
 		if (req.getParameter("key") != null) {
 			matchKey = KeyFactory.stringToKey(req.getParameter("key"));
@@ -249,23 +232,20 @@ public class MatchServiceImpl extends BaseServlet {
 		return set.toJSONString();
 	}
 
-	protected long doPersist(HttpServletRequest req)
-			throws EntityNotFoundException, EntityValidationException {
+	protected long doPersist(HttpServletRequest req) throws EntityNotFoundException, EntityValidationException {
 		Logger LOG = Logger.getLogger("TESTE");
 		Match m = new Match(req);
 
 		if (req.getParameter("id") != null) {
 			Long id = Long.valueOf(req.getParameter("id"));
-			Key matchKey = KeyFactory
-					.createKey(Match.class.getSimpleName(), id);
+			Key matchKey = KeyFactory.createKey(Match.class.getSimpleName(), id);
 			m = (Match) DBFacade.getInstance().get(matchKey, Match.class);
 			LOG.log(Level.INFO, "Editando partida");
 		}
 		m.fromRequest(req);
 		Player playerOne = null;
 		if (req.getParameter("playerOneEmail") != null) {
-			playerOne = DBFacade.getInstance().getPlayerByEmail(
-					req.getParameter("playerOneEmail"));
+			playerOne = DBFacade.getInstance().getPlayerByEmail(req.getParameter("playerOneEmail"));
 			m.setIdPlayerOne(playerOne.getKey().getId());
 		} else {
 			LOG.log(Level.INFO, "Erro grave!!!!");
@@ -276,53 +256,30 @@ public class MatchServiceImpl extends BaseServlet {
 
 		try {
 			if (req.getParameter("playerTwoEmail") != null) {
-				String playerTwoEmail = req.getParameter("playerTwoEmail")
-						.toLowerCase();
-				Player playerTwo = DBFacade.getInstance().getPlayerByEmail(
-						playerTwoEmail);
+				String playerTwoEmail = req.getParameter("playerTwoEmail").toLowerCase();
+				Player playerTwo = DBFacade.getInstance().getPlayerByEmail(playerTwoEmail);
 				m.setIdPlayerTwo(playerTwo.getKey().getId());
 
-				java.text.SimpleDateFormat dateFmt = new java.text.SimpleDateFormat(
-						"dd/MM");
-				java.text.SimpleDateFormat horaFmt = new java.text.SimpleDateFormat(
-						"HH:mm");
+				java.text.SimpleDateFormat dateFmt = new java.text.SimpleDateFormat("dd/MM");
+				java.text.SimpleDateFormat horaFmt = new java.text.SimpleDateFormat("HH:mm");
 				Date data = new Date(Long.parseLong(req.getParameter("date")));
 				LOG.log(Level.INFO, "Enviando email para " + playerTwoEmail);
 
-				new SendEmail()
-						.sendEmail(
-								"Olá "
-										+ name
-										+ ",<br>"
-										+ req.getParameter("playerOneEmail")
-										+ " lhe convidou para uma partida de tênis dia "
-										+ dateFmt.format(data)
-										+ " às "
-										+ horaFmt.format(data)
-										+ " pelo aplicativo ATVP, Associação de Tenistas Virtuais Pro.<br><a href=\"https://play.google.com/store/apps/details?id=com.ionicframework.atvpmobile663442\"> <img alt=\"Get it on Google Play\" src=\"https://developer.android.com/images/brand/pt-br_generic_rgb_wo_45.png\" /></a><br>",
-								"Ranking de Tênis Virtual", playerTwoEmail,
-								name);
+				new SendEmail().sendEmail("Olá " + name + ",<br>" + req.getParameter("playerOneEmail") + " lhe convidou para uma partida de tênis dia " + dateFmt.format(data) + " às " + horaFmt.format(data) + " pelo aplicativo ATVP, Associação de Tenistas Virtuais Pro.<br><a href=\"https://play.google.com/store/apps/details?id=com.ionicframework.atvpmobile663442\"> <img alt=\"Get it on Google Play\" src=\"https://developer.android.com/images/brand/pt-br_generic_rgb_wo_45.png\" /></a><br>",
+						"Ranking de Tênis Virtual", playerTwoEmail, name);
 
-				if (DBFacade.getInstance().getFriendShip(playerOne.getKey(),
-						playerTwo.getKey()) == null
-						&& DBFacade.getInstance().getFriendShip(
-								playerTwo.getKey(), playerOne.getKey()) == null) {
+				if (DBFacade.getInstance().getFriendShip(playerOne.getKey(), playerTwo.getKey()) == null && DBFacade.getInstance().getFriendShip(playerTwo.getKey(), playerOne.getKey()) == null) {
 					LOG.log(Level.INFO, "Não são amigos ainda. Criando amizade");
-					Friendship fship = new Friendship(playerOne.getKey(),
-							playerTwo.getKey());
+					Friendship fship = new Friendship(playerOne.getKey(), playerTwo.getKey());
 					DBFacade.getInstance().persist(fship);
 				}
 
 			}
 		} catch (Exception e) {
-			if (req.getParameter("forceInvitation") != null
-					&& "true".equals(req.getParameter("forceInvitation"))) {
-				String playerTwoEmail = req.getParameter("playerTwoEmail")
-						.toLowerCase();
-				Player inviter = DBFacade.getInstance().getPlayerByEmail(
-						req.getParameter("playerOneEmail"));
-				Invitation invitation = new Invitation(inviter.getKey(),
-						playerTwoEmail);
+			if (req.getParameter("forceInvitation") != null && "true".equals(req.getParameter("forceInvitation"))) {
+				String playerTwoEmail = req.getParameter("playerTwoEmail").toLowerCase();
+				Player inviter = DBFacade.getInstance().getPlayerByEmail(req.getParameter("playerOneEmail"));
+				Invitation invitation = new Invitation(inviter.getKey(), playerTwoEmail);
 
 				Key invitationKey = DBFacade.getInstance().persist(invitation);
 
@@ -331,16 +288,8 @@ public class MatchServiceImpl extends BaseServlet {
 				m.setIdPlayerTwo(p2Key.getId());
 				try {
 
-					new SendEmail()
-							.sendEmail(
-									"Olá "
-											+ name
-											+ ",<br>"
-											+ req.getParameter("playerOneEmail")
-											+ " lhe convidou para uma partida de tênis e para participar do aplicativo ATVP, Associação de Tenistas Virtuais Pro. "
-											+ "<br><a href=\"https://play.google.com/store/apps/details?id=com.ionicframework.atvpmobile663442\"> <img alt=\"Get it on Google Play\" src=\"https://developer.android.com/images/brand/pt-br_generic_rgb_wo_45.png\" /></a>.<br>",
-									"Ranking de Tênis Virtual", playerTwoEmail,
-									name);
+					new SendEmail().sendEmail("Olá " + name + ",<br>" + req.getParameter("playerOneEmail") + " lhe convidou para uma partida de tênis e para participar do aplicativo ATVP, Associação de Tenistas Virtuais Pro. " + "<br><a href=\"https://play.google.com/store/apps/details?id=com.ionicframework.atvpmobile663442\"> <img alt=\"Get it on Google Play\" src=\"https://developer.android.com/images/brand/pt-br_generic_rgb_wo_45.png\" /></a>.<br>", "Ranking de Tênis Virtual",
+							playerTwoEmail, name);
 				} catch (UnsupportedEncodingException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -353,39 +302,32 @@ public class MatchServiceImpl extends BaseServlet {
 
 	}
 
-	public JSONArray getListByPlayer(HttpServletRequest req)
-			throws EntityNotFoundException, EntityValidationException {
+	public JSONArray getListByPlayer(HttpServletRequest req) throws EntityNotFoundException, EntityValidationException {
 
 		Long idPlayer = Long.valueOf(req.getParameter("idPlayer"));
 
-		Iterable<Entity> matches = DBFacade.getInstance()
-				.getAllMatchesForPlayer(idPlayer);
+		Iterable<Entity> matches = DBFacade.getInstance().getAllMatchesForPlayer(idPlayer);
 
 		JSONArray list = getMatchEntityDetails(matches);
 
 		return list;
 	}
 
-	public String dolistbyplayer(HttpServletRequest req)
-			throws EntityNotFoundException, EntityValidationException {
+	public String dolistbyplayer(HttpServletRequest req) throws EntityNotFoundException, EntityValidationException {
 
 		return getListByPlayer(req).toString();
 	}
 
-	public String dolistdetails(HttpServletRequest req)
-			throws EntityNotFoundException, EntityValidationException {
+	public String dolistdetails(HttpServletRequest req) throws EntityNotFoundException, EntityValidationException {
 		Iterable<Entity> rankings = null;
-		if (req.getParameter("idRanking") != null
-				&& req.getParameter("idRanking").length() > 0) {
+		if (req.getParameter("idRanking") != null && req.getParameter("idRanking").length() > 0) {
 			Long id = Long.valueOf(req.getParameter("idRanking"));
 			rankings = DBFacade.getInstance().queryMatchesFrom(id);
 			JSONArray list = getMatchEntityDetails(rankings);
 			return list.toString();
-		} else if (req.getParameter("idPlayer") != null
-				|| req.getParameter("idPlayer").length() > 0) {
+		} else if (req.getParameter("idPlayer") != null || req.getParameter("idPlayer").length() > 0) {
 			try {
-				System.out.println("Carregando de jogador "
-						+ req.getParameter("idPlayer"));
+				System.out.println("Carregando de jogador " + req.getParameter("idPlayer"));
 				return getListByPlayer(req).toString();
 			} catch (EntityNotFoundException e) {
 				// TODO Auto-generated catch block
@@ -406,19 +348,12 @@ public class MatchServiceImpl extends BaseServlet {
 	private JSONArray getMatchEntityDetails(Iterable<Entity> matchEntities) {
 		JSONArray list = new JSONArray();
 		try {
-			for (Iterator iterator = matchEntities.iterator(); iterator
-					.hasNext();) {
+			for (Iterator iterator = matchEntities.iterator(); iterator.hasNext();) {
 				Entity type = (Entity) iterator.next();
 				Match r = new Match(type);
 				JSONObject match = r.toJSON();
-				match.put(
-						"playerOne",
-						DBFacade.getInstance()
-								.get(r.getIdPlayerOne(), Player.class).toJSON());
-				match.put(
-						"playerTwo",
-						DBFacade.getInstance()
-								.get(r.getIdPlayerTwo(), Player.class).toJSON());
+				match.put("playerOne", DBFacade.getInstance().get(r.getIdPlayerOne(), Player.class).toJSON());
+				match.put("playerTwo", DBFacade.getInstance().get(r.getIdPlayerTwo(), Player.class).toJSON());
 				list.put(match);
 			}
 		} catch (Exception e) {
@@ -430,8 +365,7 @@ public class MatchServiceImpl extends BaseServlet {
 
 	protected JSONArray doList(HttpServletRequest req) {
 
-		if (req.getParameter("idRanking") == null
-				|| req.getParameter("idRanking").length() == 0) {
+		if (req.getParameter("idRanking") == null || req.getParameter("idRanking").length() == 0) {
 			try {
 
 				return getListByPlayer(req);
@@ -446,8 +380,7 @@ public class MatchServiceImpl extends BaseServlet {
 		} else {
 			Long id = Long.valueOf(req.getParameter("idRanking"));
 
-			Iterable<Entity> rankings = DBFacade.getInstance()
-					.queryMatchesFrom(id);
+			Iterable<Entity> rankings = DBFacade.getInstance().queryMatchesFrom(id);
 			JSONArray list = new JSONArray();
 			for (Iterator iterator = rankings.iterator(); iterator.hasNext();) {
 				Entity type = (Entity) iterator.next();

@@ -1,19 +1,28 @@
 package com.coutinho.atvp.entities;
 
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.persistence.Transient;
 import javax.servlet.http.HttpServletRequest;
 
+import org.json.JSONObject;
+
 import com.coutinho.atvp.db.DBFacade;
 import com.coutinho.atvp.db.EntityNotFoundException;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.KeyFactory;
 
 public class Match extends DBObject<Match> {
+	@Transient
 	Ranking ranking;
 	Long idPlayerOne;
 	Long idPlayerTwo;
+	Long date;
+	Long winnerId;
+	MatchState state = null;
+	private Long idRanking;
 
 	Integer totalSetsPlayerOne;
 	Integer totalSetsPlayerTwo;
@@ -37,11 +46,6 @@ public class Match extends DBObject<Match> {
 	public void setTotalSetsPlayerTwo(Integer totalSetsPlayerTwo) {
 		this.totalSetsPlayerTwo = totalSetsPlayerTwo;
 	}
-
-	Long date;
-	Long winnerId;
-	MatchState state = null;
-	private Long idRanking;
 
 	public void setIdRanking(Long idRanking) {
 		this.idRanking = idRanking;
@@ -81,8 +85,7 @@ public class Match extends DBObject<Match> {
 		if (entity.getProperty("matchState") == null) {
 			this.state = MatchState.Pending;
 		} else {
-			this.state = MatchState.valueOf((String) entity
-					.getProperty("matchState"));
+			this.state = MatchState.valueOf((String) entity.getProperty("matchState"));
 		}
 	}
 
@@ -158,8 +161,7 @@ public class Match extends DBObject<Match> {
 		try {
 			if (getKey() != null) {
 				if (this.idRanking != null) {
-					this.ranking = (Ranking) DBFacade.getInstance().get(
-							this.idRanking, Ranking.class);
+					this.ranking = (Ranking) DBFacade.getInstance().get(this.idRanking, Ranking.class);
 				}
 			}
 		} catch (EntityNotFoundException e) {
@@ -192,4 +194,36 @@ public class Match extends DBObject<Match> {
 		this.playerTwo = playerTwo;
 	}
 
+	protected boolean isHandledByChild(String mname, Object object) {
+		try {
+			if ("setMatchState".equals(mname)) {
+				String objString = (String) object;
+				setMatchState(MatchState.valueOf(objString));
+				return true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	public static Match fromJson(JSONObject matchJson) {
+		Entity ent = new Entity(KeyFactory.createKey(Match.class.getSimpleName(), matchJson.getLong("id")));
+
+		for (Iterator iterator = matchJson.keys(); iterator.hasNext();) {
+			String key = (String) iterator.next();
+			if (key.equals("sets")) {
+				continue;
+			}
+			ent.setProperty(key, matchJson.get(key));
+
+		}
+		return new Match(ent);
+	}
+
+	@Override
+	public String toString() {
+
+		return getId() + "." + state.name() + "|" + totalSetsPlayerOne + "/" + totalSetsPlayerTwo + "@" + getKind();
+	}
 }

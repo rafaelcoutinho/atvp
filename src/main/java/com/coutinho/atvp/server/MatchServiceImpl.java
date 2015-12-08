@@ -309,6 +309,7 @@ public class MatchServiceImpl extends BaseServlet {
 		Iterable<Entity> matches = DBFacade.getInstance().getAllMatchesForPlayer(idPlayer);
 
 		JSONArray list = getMatchEntityDetails(matches);
+		LOG.info("tota " + list.length());
 
 		return list;
 	}
@@ -338,7 +339,7 @@ public class MatchServiceImpl extends BaseServlet {
 			}
 			return null;
 		} else {
-			System.err.println("nenhuma info disponivel");
+			LOG.warning("nenhuma info disponivel");
 			JSONArray list = getMatchEntityDetails(null);
 			return list.toString();
 		}

@@ -5,6 +5,23 @@
 		<property name="idRanking" direction="asc" />
 		<property name="date" direction="asc" />
 	</datastore-index>
+	<datastore-index kind="Match" ancestor="false" source="manual">
+		<property name="idPlayerOne" direction="asc" />
+		<property name="date" direction="asc" />
+	</datastore-index>
+	<datastore-index kind="Match" ancestor="false" source="manual">
+		<property name="idPlayerOne" direction="asc" />
+		<property name="date" direction="desc" />
+	</datastore-index>
+	
+	<datastore-index kind="Match" ancestor="false" source="manual">
+		<property name="idPlayerTwo" direction="asc" />
+		<property name="date" direction="asc" />
+	</datastore-index>
+	<datastore-index kind="Match" ancestor="false" source="manual">
+		<property name="idPlayerTwo" direction="asc" />
+		<property name="date" direction="desc" />
+	</datastore-index>
 
 	<datastore-index kind="Match" ancestor="false" source="auto">
 		<property name="idPlayerTwo" direction="asc" />

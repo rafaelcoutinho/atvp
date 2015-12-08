@@ -3,6 +3,8 @@ package com.coutinho.atvp.server;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -23,10 +25,10 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 
 public class SignUpServiceImpl extends HttpServlet {
+	Logger LOG = Logger.getLogger("Web");
 
 	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String email = req.getParameter("email").toLowerCase();
 		if (req.getRequestURI().contains("login")) {
 			if ("true".equals(req.getParameter("fb"))) {
@@ -43,8 +45,7 @@ public class SignUpServiceImpl extends HttpServlet {
 						}
 					}
 
-					req.getSession().setAttribute("idPlayer",
-							p.getKey().getId());
+					req.getSession().setAttribute("idPlayer", p.getKey().getId());
 					resp.getWriter().write(p.toJSONString());
 				} catch (EntityNotFoundException e) {
 					registerNewUser(req, resp, email);
@@ -59,11 +60,9 @@ public class SignUpServiceImpl extends HttpServlet {
 					if ("senhadificildemais".equals(password)) {
 						p = DBFacade.getInstance().getPlayerByEmail(email);
 					} else {
-						p = DBFacade.getInstance().getPlayerByLogin(email,
-								getMd5edPwd(password));
+						p = DBFacade.getInstance().getPlayerByLogin(email, getMd5edPwd(password));
 					}
-					req.getSession().setAttribute("idPlayer",
-							p.getKey().getId());
+					req.getSession().setAttribute("idPlayer", p.getKey().getId());
 					resp.getWriter().write(p.toJSONString());
 				} catch (LoginFailedException e) {
 					e.printStackTrace();
@@ -92,8 +91,7 @@ public class SignUpServiceImpl extends HttpServlet {
 		resp.getWriter().write(response.toString());
 	}
 
-	public void registerNewUser(HttpServletRequest req,
-			HttpServletResponse resp, String email) throws IOException {
+	public void registerNewUser(HttpServletRequest req, HttpServletResponse resp, String email) throws IOException {
 		try {
 
 			try {
@@ -116,8 +114,7 @@ public class SignUpServiceImpl extends HttpServlet {
 			} catch (EntityNotFoundException e) {
 				Key id = persistProfile(req);
 
-				Player p = (Player) DBFacade.getInstance()
-						.get(id, Player.class);
+				Player p = (Player) DBFacade.getInstance().get(id, Player.class);
 				updateFriendshio(p);
 
 				resp.getWriter().write(p.toJSONString());
@@ -139,8 +136,7 @@ public class SignUpServiceImpl extends HttpServlet {
 
 	private void updateFriendshio(Player p) {
 		try {
-			Iterable<Entity> list = DBFacade.getInstance()
-					.listInvitationsByEmail(p.getEmail());
+			Iterable<Entity> list = DBFacade.getInstance().listInvitationsByEmail(p.getEmail());
 			for (Iterator iterator = list.iterator(); iterator.hasNext();) {
 				try {
 					Entity type = (Entity) iterator.next();
@@ -148,17 +144,14 @@ public class SignUpServiceImpl extends HttpServlet {
 					Friendship fship = new Friendship(inv.getFrom(), p.getKey());
 					DBFacade.getInstance().persist(fship);
 				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-					System.err.println("Falhou ao atualizar amizade. "
-							+ e1.getMessage());
+
+					LOG.log(Level.SEVERE, "Falhou ao atualizar amizade. ", e1);
 				}
 
 			}
 		} catch (Exception e1) {
-			e1.printStackTrace();
-			System.err.println("Falhou ao atualizar amizades "
-					+ e1.getMessage());
+			LOG.log(Level.SEVERE, "Falhou ao atualizar amizade. ", e1);
+
 		}
 	}
 
@@ -168,20 +161,17 @@ public class SignUpServiceImpl extends HttpServlet {
 			byte[] array = md.digest(password.getBytes("UTF-8"));
 			StringBuffer collector = new StringBuffer();
 			for (int i = 0; i < array.length; ++i) {
-				collector.append(Integer.toHexString((array[i] & 0xFF) | 0x100)
-						.substring(1, 3));
+				collector.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1, 3));
 			}
 			return collector.toString();
 		}// end try
 		catch (Exception e) {
 			e.printStackTrace();
-			throw new RuntimeException("Could not find a MD5 instance: "
-					+ e.getMessage());
+			throw new RuntimeException("Could not find a MD5 instance: " + e.getMessage());
 		}
 	}
 
-	public Key persistProfile(HttpServletRequest req)
-			throws IllegalArgumentException, EntityValidationException {
+	public Key persistProfile(HttpServletRequest req) throws IllegalArgumentException, EntityValidationException {
 		String name = req.getParameter("name");
 		String nickname = req.getParameter("nickname");
 		String email = req.getParameter("email").toLowerCase();

@@ -2,13 +2,18 @@ package com.coutinho.atvp.entities;
 
 import java.util.Map;
 
+import javax.persistence.Transient;
 import javax.servlet.http.HttpServletRequest;
+
+import org.json.JSONObject;
 
 import com.coutinho.atvp.db.DBFacade;
 import com.coutinho.atvp.db.EntityNotFoundException;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.KeyFactory;
 
 public class Set extends DBObject<Set> {
+	@Transient
 	Match match;
 	Long duration;
 	Integer number;
@@ -88,13 +93,25 @@ public class Set extends DBObject<Set> {
 		super.fromEntity(m);
 		try {
 			if (getKey() != null) {
-				this.match = (Match) DBFacade.getInstance().get(
-						getKey().getParent(), Match.class);
+				this.match = (Match) DBFacade.getInstance().get(getKey().getParent(), Match.class);
 			}
 		} catch (EntityNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public static Set getFromJson(JSONObject set, Match m) {
+		Set s = new Set(m, set.getInt("number"));
+		s.match = m;
+		s.playerOneGames = set.getInt("playerOneGames");
+		s.playerTwoGames = set.getInt("playerTwoGames");
+		if (set.has("winnerId")) {
+			s.winnerId = set.getLong("winnerId");
+		}
+		s.duration = 0l;
+		s.id = KeyFactory.createKey(Set.class.getSimpleName(), set.getLong("id"));
+		return s;
 	}
 
 }

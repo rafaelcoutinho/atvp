@@ -2,7 +2,8 @@
 <div class="row row-top">
 
 	<div class="col col-demo" style="font-weight: bold;">Rival</div>
-	<div class="col col-demo" style="font-weight: bold;">Jogos contra</div>
+	<div class="col col-demo" style="font-weight: bold;">Jogos</div>
+	<div class="col col-demo" style="font-weight: bold;">W/L</div>
 </div>
 <ion-list> <ion-item ng-repeat="player in friends"
 	style="padding: 0;border: 0;">
@@ -14,6 +15,7 @@
 			ng-src="{{player.imageProfile}}"> {{player.name}}
 	</div>
 	<div class="col col-demo" style="height: 47px;">{{player.matches}}</div>
+	<div class="col col-demo" style="height: 47px;">{{player.win}} / {{player.loss}}</div>
 </div>
 </ion-item> </ion-list> </uib-tab> <uib-tab heading="Convites">
 <div class="row row-top">

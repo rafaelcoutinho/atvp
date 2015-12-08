@@ -2,6 +2,7 @@ package com.coutinho.atvp.server;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -17,6 +18,8 @@ import com.coutinho.atvp.db.EntityNotFoundException;
 import com.coutinho.atvp.exception.EntityValidationException;
 
 public abstract class BaseServlet extends HttpServlet {
+	static Logger LOG = Logger.getLogger("Web");
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
@@ -34,7 +37,6 @@ public abstract class BaseServlet extends HttpServlet {
 		} else if (action != null) {
 			try {
 				Method m = this.getClass().getMethod("do" + action, HttpServletRequest.class);
-				System.err.println("Metodo " + m + " " + req);
 				String r = (String) m.invoke(this, req);
 				if (r == null) {
 					throw new NullPointerException("Resposta do metodo " + action + " nula!");
@@ -47,7 +49,7 @@ public abstract class BaseServlet extends HttpServlet {
 				logException("Falha seguranca ", e);
 				resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 			} catch (Exception e) {
-				logException("Falha genercia ", e);
+				logException("Falha generica ", e);
 				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 		} else {
@@ -94,17 +96,14 @@ public abstract class BaseServlet extends HttpServlet {
 				String r = (String) m.invoke(this, req);
 				resp.getWriter().print(r);
 			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
+				LOG.log(Level.WARNING, "NoSuchMethodException", e);
 				resp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
 			} catch (SecurityException e) {
-				e.printStackTrace();
+				LOG.log(Level.WARNING, "SecurityException", e);
 				resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 			} catch (Exception e) {
-				e.printStackTrace();
-				System.err.println(e.getMessage());
-				for (int i = 0; i < e.getStackTrace().length; i++) {
-					System.err.println(e.getStackTrace()[i].getClassName() + ":" + e.getStackTrace()[i].getLineNumber());
-				}
+
+				LOG.log(Level.SEVERE, "Exception", e);
 				resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				resp.getWriter().print("{'error':'unknown_error','msg':'" + e.getMessage() + "'}");
 			}
@@ -120,11 +119,7 @@ public abstract class BaseServlet extends HttpServlet {
 	protected abstract JSONArray doList(HttpServletRequest req);
 
 	public static void logException(String w, Exception e) {
-		System.err.println(w);
-		System.err.println(e.getMessage());
-		for (int i = 0; i < e.getStackTrace().length && i < 4; i++) {
-			System.err.println(e.getStackTrace()[i].getClassName() + ":" + e.getStackTrace()[i].getLineNumber());
-		}
+		LOG.log(Level.SEVERE, w, e);
 
 	}
 

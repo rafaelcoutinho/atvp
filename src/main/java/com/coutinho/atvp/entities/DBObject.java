@@ -22,6 +22,7 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
 public abstract class DBObject<E> {
+	Logger LOG = Logger.getLogger("DBObject");
 	protected Key id;
 
 	public Key getKey() {
@@ -57,7 +58,7 @@ public abstract class DBObject<E> {
 
 	public DBObject(Entity entity) {
 		id = (entity.getKey());
-		System.err.println("id " + id);
+		LOG.finest("id " + id);
 		fromEntity(entity.getProperties());
 	}
 
@@ -69,6 +70,9 @@ public abstract class DBObject<E> {
 			Method f = fields[i];
 			try {
 				if (f.getName().equals("getClass") || f.getName().equals("getKey")) {
+					continue;
+				}
+				if (shouldAvoid(f.getName())) {
 					continue;
 				}
 				if (f.getName().startsWith("get") && f.getParameterTypes().length == 0) {
@@ -89,6 +93,11 @@ public abstract class DBObject<E> {
 
 	}
 
+	protected boolean shouldAvoid(String name) {
+
+		return false;
+	}
+
 	public String toJSONString() {
 
 		return toJSON().toString();
@@ -100,7 +109,7 @@ public abstract class DBObject<E> {
 			Method f = methods[i];
 			try {
 				String mname = f.getName();
-				if (mname.equals("getClass") || mname.equals("getId") || mname.equals("getKind")) {
+				if (mname.equals("getClass") || mname.equals("getId") || mname.equals("getKind") || mname.equals("getKey")) {
 					continue;
 				}
 
@@ -113,10 +122,13 @@ public abstract class DBObject<E> {
 					String propName = f.getName().substring(3, 4);
 
 					propName = propName.toLowerCase() + f.getName().substring(4);
+					try {
+						if (isTransient(this.getClass().getDeclaredField(propName).getAnnotations())) {
 
-					if (isTransient(this.getClass().getDeclaredField(propName).getAnnotations())) {
-
-						continue;
+							continue;
+						}
+					} catch (NoSuchFieldException e) {
+						LOG.log(Level.FINE, "No such field " + f.getName(), e);
 					}
 					Object obj = convertProp(propName, f.getReturnType());
 					if (obj != null) {
@@ -125,10 +137,11 @@ public abstract class DBObject<E> {
 						entity.setProperty(propName, f.invoke(this));
 					}
 				}
-			} catch (NoSuchFieldException e) {
-			} catch (Exception e) {
+			}
 
-				e.printStackTrace();
+			catch (Exception e) {
+				LOG.log(Level.WARNING, "Exception field " + f.getName(), e);
+
 			}
 		}
 	}
@@ -151,17 +164,23 @@ public abstract class DBObject<E> {
 
 		for (Iterator iterator = m.keySet().iterator(); iterator.hasNext();) {
 			String key = (String) iterator.next();
-			if (key.equalsIgnoreCase("key") || key.equalsIgnoreCase("ik")) {
-				System.err.println("nao deve setar o campo " + key);
+			if (key.equalsIgnoreCase("kind") || key.equalsIgnoreCase("key") || key.equalsIgnoreCase("ik")) {
+				LOG.finest("nao deve setar o campo " + key);
 				continue;
 			}
 			String mname = key.charAt(0) + "";
 
-			Logger LOG = Logger.getLogger("TESTE");
 			mname = "set" + mname.toUpperCase() + key.substring(1);
-			System.err.println("buscando  " + mname);
+
 			Method me = null;
 			try {
+
+				if (mname.equals("setId")) {
+					LOG.finest("SEtnado id  " + mname);
+					id = KeyFactory.createKey(getKind(), (Long) m.get(key));
+					continue;
+				}
+				LOG.finest("buscando  " + mname);
 				Method[] ms = this.getClass().getMethods();
 				for (int i = 0; i < ms.length; i++) {
 					if (ms[i].getName().equals(mname)) {
@@ -171,12 +190,12 @@ public abstract class DBObject<E> {
 				}
 
 				if (me == null) {
-					System.err.println("sem metodo?");
+					LOG.finest("sem metodo?");
 					throw new NoSuchMethodException(mname);
 				} else {
 					try {
 						if ("undefined".equals((String) m.get(key))) {
-							System.err.println("valor indefinido para " + key);
+							LOG.finest("valor indefinido para " + key);
 							LOG.log(Level.FINER, "valor indefinido para " + key);
 
 							continue;
@@ -184,16 +203,17 @@ public abstract class DBObject<E> {
 					} catch (Exception e) {
 
 					}
+					if (isHandledByChild(mname, m.get(key))) {
 
-					if (me.getParameterTypes()[0].equals(String.class)) {
-						System.err.println("String... " + key + "=" + m.get(key));
+					} else if (me.getParameterTypes()[0].equals(String.class)) {
+						LOG.finest("String... " + key + "=" + m.get(key));
 						if (m.get(key) instanceof String[]) {
 							me.invoke(this, ((String[]) m.get(key))[0]);
 						} else {
 							me.invoke(this, (String) m.get(key));
 						}
 					} else if (me.getParameterTypes()[0].equals(Integer.class)) {
-						System.err.println("Integer... " + key + "=" + m.get(key));
+						LOG.finest("Integer... " + key + "=" + m.get(key));
 						Object val = m.get(key);
 						Integer value = null;
 						if (m.get(key) instanceof Integer) {
@@ -205,7 +225,7 @@ public abstract class DBObject<E> {
 						}
 						me.invoke(this, value);
 					} else if (me.getParameterTypes()[0].equals(Long.class)) {
-						System.err.println("long... " + key + "=" + m.get(key));
+						LOG.finest("long... " + key + "=" + m.get(key));
 						Object val = m.get(key);
 						Long value = null;
 						if (m.get(key) instanceof Long) {
@@ -213,33 +233,40 @@ public abstract class DBObject<E> {
 						} else if (m.get(key) instanceof String) {
 							value = Long.valueOf((String) val);
 						}
-						System.err.println("invocou com " + value);
+						LOG.finest("invocou com " + value);
 						me.invoke(this, value);
 					} else if (m.get(key) instanceof DBObject) {
 						LOG.log(Level.FINER, "podia pegar aqui");
-						System.err.println("m.get(key) instanceof DBObject");
+						LOG.finest("m.get(key) instanceof DBObject");
 
 					} else {
-						System.err.println("invocou pra setar " + key + "=" + m.get(key));
+						LOG.finest("invocou pra setar " + key + "=" + m.get(key));
 						me.invoke(this, m.get(key));
 					}
 				}
 			} catch (NoSuchMethodException e) {
-				LOG.log(Level.FINER, "Nao encontrou o set de " + mname + " de " + this.getKind());
-				BaseServlet.logException("Nao encontrou o set de " + mname + " de " + this.getKind(), e);
+				LOG.log(Level.INFO, "Nao encontrou o set de " + mname + " de " + this.getKind());
+				// BaseServlet.logException("Nao encontrou o set de " + mname +
+				// " de " + this.getKind(), e);
 
 			} catch (IllegalArgumentException e) {
-				LOG.log(Level.FINER, "IllegalArgumentException " + mname + " " + m.get(key));
+				LOG.log(Level.WARNING, "IllegalArgumentException " + mname + " " + m.get(key));
 
-				BaseServlet.logException("IllegalArgumentException " + mname + " " + m.get(key), e);
+				// BaseServlet.logException("IllegalArgumentException " + mname
+				// + " " + m.get(key), e);
 			} catch (Exception e) {
-				LOG.log(Level.FINER, "Excecao  " + key + " " + m.get(key));
+				LOG.log(Level.SEVERE, "Excecao  " + key + " " + m.get(key));
 
-				BaseServlet.logException("Excecao  " + key + " " + m.get(key), e);
+				// BaseServlet.logException("Excecao  " + key + " " +
+				// m.get(key), e);
 			}
 
 		}
 
+	}
+
+	protected boolean isHandledByChild(String mname, Object object) {
+		return false;
 	}
 
 	@Transient

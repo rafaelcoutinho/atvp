@@ -36,11 +36,10 @@
 				$("<option></option>") // Yes you can do this.
 				.text(item.name).val(item.id));
 				playerHash[item.id] = item;
-				
 
 				$("#tourManagerList").append( // Append an object to the inside of the select box
-						$("<option></option>") // Yes you can do this.
-						.text(item.name).val(item.id));
+				$("<option></option>") // Yes you can do this.
+				.text(item.name).val(item.id));
 
 			});
 		});
@@ -74,8 +73,6 @@
 				$("#rankingList").append( // Append an object to the inside of the select box
 				$("<option></option>") // Yes you can do this.
 				.text(item.title).val(item.id));
-			
-				
 
 			});
 		});
@@ -112,6 +109,13 @@
 </script>
 </head>
 <body>
+	<form action="/rest/backuper" method="post">
+		<input type="text" value="" name="code" /><br> <input type="hidden" value="persist" name="action" />
+
+		<textarea rows="10" cols="80" name="jsonbackup"></textarea><br>
+		<input type="submit">
+	</form>
+
 	<div>
 		<h2>Jogador</h2>
 		<form action="/rest/signup" method="post">
@@ -136,8 +140,8 @@
 	<div>
 		<h2>Gerente Torneio</h2>
 		<form action="/manager/tournamentList.jsp" method="get">
-			Manager <select
-				id="tourManagerList" name="idManager"></select><input type="submit">
+			Manager <select id="tourManagerList" name="idManager"></select><input
+				type="submit">
 		</form>
 
 	</div>

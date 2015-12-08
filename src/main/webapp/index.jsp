@@ -1,3 +1,3 @@
 <%
-response.sendRedirect("multi/index.html");
+response.sendRedirect("multi/index.html#/dash");
 %>

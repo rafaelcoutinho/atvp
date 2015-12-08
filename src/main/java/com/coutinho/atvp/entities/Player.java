@@ -1,10 +1,17 @@
 package com.coutinho.atvp.entities;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
+
+import org.json.JSONObject;
 
 import com.coutinho.atvp.exception.EntityValidationException;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.Filter;
@@ -27,6 +34,14 @@ public class Player extends DBObject<Player> {
 		return fbId;
 	}
 
+	@Override
+	protected boolean shouldAvoid(String name) {
+		if ("getPassword".equals(name)) {
+			return true;
+		}
+		return super.shouldAvoid(name);
+	}
+
 	public void setFbId(String fbId) {
 		this.fbId = fbId;
 	}
@@ -34,8 +49,7 @@ public class Player extends DBObject<Player> {
 	public String getImageProfile() {
 		if (imageProfile == null || imageProfile.length() == 0) {
 			if (fbId != null && fbId.length() > 0) {
-				return "http://graph.facebook.com/" + fbId
-						+ "/picture?width=64&height=64";
+				return "http://graph.facebook.com/" + fbId + "/picture?width=64&height=64";
 			}
 		}
 		return imageProfile;
@@ -114,24 +128,35 @@ public class Player extends DBObject<Player> {
 	}
 
 	@Override
-	public void validate(DatastoreService datastore)
-			throws EntityValidationException {
+	public void validate(DatastoreService datastore) throws EntityValidationException {
 		if (getEmail() == null || getEmail().isEmpty()) {
 			throw new EntityValidationException("Email vazio");
 		}
 		if (getPassword() == null || getPassword().isEmpty()) {
-			throw new EntityValidationException("Senha vazia");
+			throw new EntityValidationException("Senha vazia "+email+" "+password);
 		}
-		Filter emailFilter = new FilterPredicate("email", FilterOperator.EQUAL,
-				email);
+		Filter emailFilter = new FilterPredicate("email", FilterOperator.EQUAL, email);
 
 		Query q = new Query(getKind()).setFilter(emailFilter);
 		PreparedQuery pq = datastore.prepare(q);
-		if (pq.asSingleEntity() != null
-				&& (getId() == null || pq.asSingleEntity().getKey().getId() != getId())) {
-			throw new EntityValidationException("Email existente");
+		if (pq.asSingleEntity() != null && (getId() == null || pq.asSingleEntity().getKey().getId() != getId())) {
+			throw new EntityValidationException("Email existente " + email);
 		}
 
+	}
+
+	public static Player fromJson(JSONObject player) {
+		Entity ent = new Entity(KeyFactory.createKey(Player.class.getSimpleName(), player.getLong("id")));
+
+		for (Iterator iterator = player.keys(); iterator.hasNext();) {
+			String key = (String) iterator.next();
+			if (key.equals("invitations") || key.equals("matches")) {
+				continue;
+			}
+			ent.setProperty(key, player.get(key));
+
+		}
+		return new Player(ent);
 	}
 
 }

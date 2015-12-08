@@ -89,10 +89,9 @@ public class PlayerServiceImpl extends BaseServlet {
 
 			for (Iterator<Entity> iterator = friends.iterator(); iterator.hasNext();) {
 				Entity entity = (Entity) iterator.next();
-				System.err.println("key " + KeyFactory.keyToString(entity.getKey()));
+
 				Friendship fship = new Friendship(entity);
 
-				System.err.println("f " + fship.getId() + " " + entity);
 				Player friend = null;
 				if (fship.getIdPlayerOne().equals(r.getKey())) {
 					friend = (Player) DBFacade.getInstance().get(fship.getIdPlayerTwo(), Player.class);
@@ -100,11 +99,34 @@ public class PlayerServiceImpl extends BaseServlet {
 					friend = (Player) DBFacade.getInstance().get(fship.getIdPlayerOne(), Player.class);
 				}
 				JSONObject friendJson = friend.toJSON();
-				System.err.println("friend " + friend.getId());
-				int matches = DBFacade.getInstance().getAllMatchesBetween(r.getKey(), friend.getKey());
-				matches += DBFacade.getInstance().getAllMatchesBetween(friend.getKey(), r.getKey());
+
+				Iterable<Entity> mEntities = DBFacade.getInstance().getAllMatchesBetween(r.getKey(), friend.getKey());
+				int matches = 0;
+				int win = 0;
+				int loss = 0;
+				for (Iterator<Entity> iterator2 = mEntities.iterator(); iterator2.hasNext();) {
+					Entity type = (Entity) iterator2.next();
+					Match m = new Match(type);
+					matches++;
+					if (m.getIdPlayerOne().equals(id)) {
+						if (m.getTotalSetsPlayerOne() > m.getTotalSetsPlayerTwo()) {
+							win++;
+						} else if (m.getTotalSetsPlayerOne() < m.getTotalSetsPlayerTwo()) {
+							loss++;
+						}
+					} else {
+						if (m.getTotalSetsPlayerOne() > m.getTotalSetsPlayerTwo()) {
+							loss++;
+						} else if (m.getTotalSetsPlayerOne() < m.getTotalSetsPlayerTwo()) {
+							win++;
+						}
+					}
+
+				}
 
 				friendJson.put("matches", matches);
+				friendJson.put("win", win);
+				friendJson.put("loss", loss);
 
 				friendsArr.put(friendJson);
 			}
@@ -123,7 +145,7 @@ public class PlayerServiceImpl extends BaseServlet {
 			Player r = (Player) (DBFacade.getInstance().get(id, Player.class));
 
 			JSONObject json = r.toJSON();
-			Iterable<Entity> playerMatches = DBFacade.getInstance().getAllMatchesForPlayer(r.getId());
+
 			Stats allTimes = new Stats();
 			Stats currentMonth = new Stats();
 			Stats currentYear = new Stats();
@@ -133,136 +155,163 @@ public class PlayerServiceImpl extends BaseServlet {
 			yearStart.set(Calendar.SECOND, 0);
 			yearStart.set(Calendar.DAY_OF_YEAR, 0);
 
-			System.out.println(yearStart.getTime() + " yearStart");
-			System.out.println(yearStart.getTime() + " monthStart");
-
 			Calendar monthStart = Calendar.getInstance(req.getLocale());
 			monthStart.set(Calendar.DAY_OF_MONTH, 0);
 			monthStart.set(Calendar.HOUR_OF_DAY, 0);
 			monthStart.set(Calendar.MINUTE, 0);
 			monthStart.set(Calendar.SECOND, 0);
 
-			for (Iterator iterator = playerMatches.iterator(); iterator.hasNext();) {
-				Entity entity = (Entity) iterator.next();
-				Match match = new Match(entity);
-				updateMatchStats(match);
-				allTimes.totalMatches++;
-				if (yearStart.getTimeInMillis() < match.getDate()) {
-					currentYear.totalMatches++;
-				}
-				if (monthStart.getTimeInMillis() < (match.getDate())) {
-					currentMonth.totalMatches++;
-				}
-				List<Entity> setEntities = DBFacade.getInstance().getAllSetsFrom(match);
-				int setsWonInMatch = 0;
-				for (Iterator iterator2 = setEntities.iterator(); iterator2.hasNext();) {
-					Entity entity2 = (Entity) iterator2.next();
-					Set set = new Set(entity2);
-					if (match.getIdPlayerOne().equals(r.getId())) {
-						allTimes.totalGamesWon += set.getPlayerOneGames();
-						allTimes.totalGamesLost += set.getPlayerTwoGames();
-						if (yearStart.getTimeInMillis() < match.getDate()) {
-							currentYear.totalGamesWon += set.getPlayerOneGames();
-							currentYear.totalGamesLost += set.getPlayerTwoGames();
-						}
-						if (monthStart.getTimeInMillis() < (match.getDate())) {
-							currentMonth.totalGamesWon += set.getPlayerOneGames();
-							currentMonth.totalGamesLost += set.getPlayerTwoGames();
-						}
+			LOG.info(yearStart.getTime() + " yearStart");
+			LOG.info(monthStart.getTime() + " monthStart " + monthStart.getTimeInMillis());
+			if (1 == 1) {
+				Iterable<Entity> res1 = DBFacade.getInstance().getAllMatchesForPlayer(r.getId(), null, null);
+				extractStats(r, allTimes, currentMonth, currentYear, yearStart, monthStart, res1);
 
-						if (set.getPlayerOneGames() > set.getPlayerTwoGames()) {
-							if (yearStart.getTimeInMillis() < match.getDate()) {
-								currentYear.totalSetWon++;
-							}
-							if (monthStart.getTimeInMillis() < (match.getDate())) {
-								currentMonth.totalSetWon++;
-							}
-							allTimes.totalSetWon++;
-							setsWonInMatch++;
-						} else {
-							if (yearStart.getTimeInMillis() < match.getDate()) {
-								currentYear.totalSetLost++;
-							}
-							if (monthStart.getTimeInMillis() < (match.getDate())) {
-								currentMonth.totalSetLost++;
-							}
-							allTimes.totalSetLost++;
-							setsWonInMatch--;
-						}
-					} else {
+			} else {
 
-						if (yearStart.getTimeInMillis() < match.getDate()) {
-							currentYear.totalGamesWon += set.getPlayerTwoGames();
-							currentYear.totalGamesLost += set.getPlayerOneGames();
-						}
-						if (monthStart.getTimeInMillis() < (match.getDate())) {
-							currentMonth.totalGamesWon += set.getPlayerTwoGames();
-							currentMonth.totalGamesLost += set.getPlayerOneGames();
-						}
-						allTimes.totalGamesWon += set.getPlayerTwoGames();
-						allTimes.totalGamesLost += set.getPlayerOneGames();
-						if (set.getPlayerOneGames() > set.getPlayerTwoGames()) {
-							if (yearStart.getTimeInMillis() < match.getDate()) {
-								currentYear.totalSetLost++;
-							}
-							if (monthStart.getTimeInMillis() < (match.getDate())) {
-								currentMonth.totalSetLost++;
-							}
-							allTimes.totalSetLost++;
-							setsWonInMatch--;
-
-						} else {
-							if (yearStart.getTimeInMillis() < match.getDate()) {
-								currentYear.totalSetWon++;
-							}
-							if (monthStart.getTimeInMillis() < (match.getDate())) {
-								currentMonth.totalSetWon++;
-							}
-							allTimes.totalSetWon++;
-							setsWonInMatch++;
-						}
+				Calendar startDate = (Calendar) monthStart.clone();
+				Iterable<Entity> res1 = DBFacade.getInstance().getAllMatchesForPlayer(r.getId(), startDate.getTimeInMillis(), null);
+				extractStats(r, allTimes, currentMonth, currentYear, yearStart, monthStart, res1);
+				LOG.info("Mes atual feito");
+				while (res1.iterator().hasNext() && yearStart.before(startDate)) {
+					Calendar end = (Calendar) startDate.clone();
+					startDate.add(Calendar.MONTH, -1);
+					if (startDate.before(yearStart)) {
+						startDate = yearStart;
 					}
+					res1 = DBFacade.getInstance().getAllMatchesForPlayer(r.getId(), startDate.getTimeInMillis(), end.getTimeInMillis());
+					extractStats(r, allTimes, currentMonth, currentYear, yearStart, monthStart, res1);
+					LOG.info(" monthStart" + startDate.getTime() + " " + end.getTime());
 				}
-				if (setsWonInMatch > 0) {
-					allTimes.totalMatchesWon++;
-					if (yearStart.getTimeInMillis() < match.getDate()) {
-						currentYear.totalMatchesWon++;
-					}
-					if (monthStart.getTimeInMillis() < (match.getDate())) {
-						currentMonth.totalMatchesWon++;
-					}
-				} else if (setsWonInMatch < 0) {
-					allTimes.totalMatchesLost++;
-					if (yearStart.getTimeInMillis() < match.getDate()) {
-						currentYear.totalMatchesLost++;
-					}
-					if (monthStart.getTimeInMillis() < (match.getDate())) {
-						currentMonth.totalMatchesLost++;
-					}
-				}
-
 			}
-
+			LOG.info("Total de partidas " + allTimes.totalMatches);
 			json.put("allTimes", allTimes.toJson());
 			json.put("currentMonth", currentMonth.toJson());
 			json.put("currentYear", currentYear.toJson());
 
 			return json.toString();
 		} catch (Exception e) {
-			System.err.println("Erro " + e.getMessage());
-			e.printStackTrace();
+			logException("Error carregando detalhes", e);
 			return null;
 		}
 
 	}
 
+	public void extractStats(Player r, Stats allTimes, Stats currentMonth, Stats currentYear, Calendar yearStart, Calendar monthStart, Iterable<Entity> playerMatches) throws EntityValidationException {
+		for (Iterator<Entity> iterator = playerMatches.iterator(); iterator.hasNext();) {
+			Entity entity = (Entity) iterator.next();
+
+			Match match = new Match(entity);
+			updateMatchStats(match);
+			allTimes.totalMatches++;
+			if (yearStart.getTimeInMillis() < match.getDate()) {
+				currentYear.totalMatches++;
+			}
+			if (monthStart.getTimeInMillis() < (match.getDate())) {
+				LOG.info("match belongs to month " + match);
+				currentMonth.totalMatches++;
+			} else {
+				LOG.info("match DO NOT belong month " + monthStart.getTimeInMillis() + " < " + match.getDate() + " " + match);
+			}
+			List<Entity> setEntities = DBFacade.getInstance().getAllSetsFrom(match);
+			int setsWonInMatch = 0;
+			for (Iterator<Entity> iterator2 = setEntities.iterator(); iterator2.hasNext();) {
+				Entity entity2 = (Entity) iterator2.next();
+				Set set = new Set(entity2);
+				if (match.getIdPlayerOne().equals(r.getId())) {
+					allTimes.totalGamesWon += set.getPlayerOneGames();
+					allTimes.totalGamesLost += set.getPlayerTwoGames();
+					if (yearStart.getTimeInMillis() < match.getDate()) {
+						currentYear.totalGamesWon += set.getPlayerOneGames();
+						currentYear.totalGamesLost += set.getPlayerTwoGames();
+					}
+					if (monthStart.getTimeInMillis() < (match.getDate())) {
+						currentMonth.totalGamesWon += set.getPlayerOneGames();
+						currentMonth.totalGamesLost += set.getPlayerTwoGames();
+					}
+
+					if (set.getPlayerOneGames() > set.getPlayerTwoGames()) {
+						if (yearStart.getTimeInMillis() < match.getDate()) {
+							currentYear.totalSetWon++;
+						}
+						if (monthStart.getTimeInMillis() < (match.getDate())) {
+							currentMonth.totalSetWon++;
+						}
+						allTimes.totalSetWon++;
+						setsWonInMatch++;
+					} else {
+						if (yearStart.getTimeInMillis() < match.getDate()) {
+							currentYear.totalSetLost++;
+						}
+						if (monthStart.getTimeInMillis() < (match.getDate())) {
+							currentMonth.totalSetLost++;
+						}
+						allTimes.totalSetLost++;
+						setsWonInMatch--;
+					}
+				} else {
+
+					if (yearStart.getTimeInMillis() < match.getDate()) {
+						currentYear.totalGamesWon += set.getPlayerTwoGames();
+						currentYear.totalGamesLost += set.getPlayerOneGames();
+					}
+					if (monthStart.getTimeInMillis() < (match.getDate())) {
+						currentMonth.totalGamesWon += set.getPlayerTwoGames();
+						currentMonth.totalGamesLost += set.getPlayerOneGames();
+					}
+					allTimes.totalGamesWon += set.getPlayerTwoGames();
+					allTimes.totalGamesLost += set.getPlayerOneGames();
+					if (set.getPlayerOneGames() > set.getPlayerTwoGames()) {
+						if (yearStart.getTimeInMillis() < match.getDate()) {
+							currentYear.totalSetLost++;
+						}
+						if (monthStart.getTimeInMillis() < (match.getDate())) {
+							currentMonth.totalSetLost++;
+						}
+						allTimes.totalSetLost++;
+						setsWonInMatch--;
+
+					} else {
+						if (yearStart.getTimeInMillis() < match.getDate()) {
+							currentYear.totalSetWon++;
+						}
+						if (monthStart.getTimeInMillis() < (match.getDate())) {
+							currentMonth.totalSetWon++;
+						}
+						allTimes.totalSetWon++;
+						setsWonInMatch++;
+					}
+				}
+			}
+			if (setsWonInMatch > 0) {
+				allTimes.totalMatchesWon++;
+				if (yearStart.getTimeInMillis() < match.getDate()) {
+					currentYear.totalMatchesWon++;
+				}
+				if (monthStart.getTimeInMillis() < (match.getDate())) {
+					currentMonth.totalMatchesWon++;
+				}
+			} else if (setsWonInMatch < 0) {
+				allTimes.totalMatchesLost++;
+				if (yearStart.getTimeInMillis() < match.getDate()) {
+					currentYear.totalMatchesLost++;
+				}
+				if (monthStart.getTimeInMillis() < (match.getDate())) {
+					currentMonth.totalMatchesLost++;
+				}
+			}
+
+		}
+	}
+
 	public static void updateMatchStats(Match match) throws EntityValidationException {
 		long oldEnough = System.currentTimeMillis() - (1000 * 60 * 60 * 24 / 4);
 		if (match.getDate() < oldEnough && MatchState.Pending.equals(match.getMatchState())) {
+			LOG.info("Atualizando partida " + match);
 			List<Entity> setEntities = DBFacade.getInstance().getAllSetsFrom(match);
 			int totalSetsPlayerTwo = 0;
 			int totalSetsPlayerOne = 0;
-			for (Iterator iterator2 = setEntities.iterator(); iterator2.hasNext();) {
+			for (Iterator<Entity> iterator2 = setEntities.iterator(); iterator2.hasNext();) {
 				Entity entity2 = (Entity) iterator2.next();
 				Set set = new Set(entity2);
 				if (set.getPlayerOneGames() > set.getPlayerTwoGames()) {
@@ -279,8 +328,17 @@ public class PlayerServiceImpl extends BaseServlet {
 				match.setWinnerId(match.getIdPlayerTwo());
 			}
 			match.setMatchState(MatchState.Completed);
-			DBFacade.getInstance().persist(match);
+			Key k = DBFacade.getInstance().persist(match);
+			LOG.info("Atualizou partida " + match);
+			try {
+				Match mm = DBFacade.getInstance().getMatch(match.getId(), false);
+				LOG.info("Atualizou partida " + mm);
 
+			} catch (EntityNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				LOG.severe(e.getMessage());
+			}
 		}
 	}
 

@@ -1,6 +1,6 @@
 package com.coutinho.atvp.server;
 
-import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -90,7 +90,6 @@ public class FriendServiceImpl extends BaseServlet {
 		try {
 			String invitedEmail = req.getParameter("email");
 			Iterable<Entity> list = DBFacade.getInstance().listInvitationsByEmail(invitedEmail);
-			Logger LOG = Logger.getLogger("TESTE");
 			LOG.warning("inviter email " + invitedEmail);
 			JSONArray invitations = new JSONArray();
 			for (Entity entity : list) {
@@ -104,12 +103,9 @@ public class FriendServiceImpl extends BaseServlet {
 			return invitations.toString();
 		} catch (Exception e) {
 
-			e.printStackTrace();
+			LOG.log(Level.SEVERE, "erro carregando invitations", e);
 			JSONObject resp = new JSONObject();
-			System.err.println(e.getMessage());
-			for (int i = 0; i < e.getStackTrace().length; i++) {
-				System.err.println(e.getStackTrace()[i].getClassName() + ":" + e.getStackTrace()[i].getLineNumber());
-			}
+
 			try {
 				resp.put("error", "failed");
 				resp.put("error_details", e.getMessage());
@@ -128,7 +124,6 @@ public class FriendServiceImpl extends BaseServlet {
 			Key playerKey = KeyFactory.createKey(Player.class.getSimpleName(), idPlayer);
 
 			Iterable<Entity> list = DBFacade.getInstance().listInvitationsByInviter(playerKey);
-			Logger LOG = Logger.getLogger("TESTE");
 			JSONArray invitationsSent = new JSONArray();
 			for (Entity entity : list) {
 				Invitation inv = new Invitation(entity);
@@ -138,13 +133,8 @@ public class FriendServiceImpl extends BaseServlet {
 
 			return invitationsSent.toString();
 		} catch (Exception e) {
-
-			e.printStackTrace();
 			JSONObject resp = new JSONObject();
-			System.err.println(e.getMessage());
-			for (int i = 0; i < e.getStackTrace().length; i++) {
-				System.err.println(e.getStackTrace()[i].getClassName() + ":" + e.getStackTrace()[i].getLineNumber());
-			}
+			LOG.log(Level.SEVERE, "erro carregando invitations enviadas", e);
 			try {
 				resp.put("error", "failed");
 				resp.put("error_details", e.getMessage());
@@ -173,13 +163,6 @@ public class FriendServiceImpl extends BaseServlet {
 				if (DBFacade.getInstance().getPlayerByEmail(invited) != null) {
 					Player inviter = (Player) DBFacade.getInstance().get(pkey, Player.class);
 					Player invitedPLayer = (Player) DBFacade.getInstance().getPlayerByEmail(invited);
-					System.err.println(invitedPLayer);
-					System.err.println(invitedPLayer.getEmail());
-					System.err.println(invitedPLayer.getKey());
-					System.err.println("--");
-					System.err.println(inviter);
-					System.err.println(inviter.getEmail());
-					System.err.println(inviter.getKey());
 
 					if (DBFacade.getInstance().getFriendShip(inviter.getKey(), invitedPLayer.getKey()) != null || DBFacade.getInstance().getFriendShip(invitedPLayer.getKey(), inviter.getKey()) != null) {
 						resp.put("error", "already_friends");
@@ -191,9 +174,15 @@ public class FriendServiceImpl extends BaseServlet {
 
 							Key p2Key = DBFacade.getInstance().persist(invitation);
 
-							new SendEmail().sendEmail("Olá " + invitedPLayer.getName()
+							new SendEmail()
+									.sendEmail(
+											"Olá "
+													+ invitedPLayer.getName()
 
-							+ ",<br>" + inviter.getName() + " quer ser seu rival no ATVP, Associação de Tênistas Virtuais Pro. Entre no <a href='http://1-dot-tenis-virtual-players.appspot.com/multi/index.html>site mobile</a> ou pelo aplicativo Android e aceite ou recuse o convite de rivalidade.<br><br>Site mobile: <a href='http://1-dot-tenis-virtual-players.appspot.com/multi/index.html'>http://1-dot-tenis-virtual-players.appspot.com/multi/index.html</a><br><a href=\"https://play.google.com/store/apps/details?id=com.ionicframework.atvpmobile663442\"> <img alt=\"Get it on Google Play\" src=\"https://developer.android.com/images/brand/pt-br_generic_rgb_wo_45.png\" /></a>", "Ranking de Tênis Virtual", invited, invited);
+													+ ",<br>"
+													+ inviter.getName()
+													+ " quer ser seu rival no ATVP, Associação de Tênistas Virtuais Pro. Entre no <a href='http://1-dot-tenis-virtual-players.appspot.com/multi/index.html>site mobile</a> ou pelo aplicativo Android e aceite ou recuse o convite de rivalidade.<br><br>Site mobile: <a href='http://1-dot-tenis-virtual-players.appspot.com/multi/index.html'>http://1-dot-tenis-virtual-players.appspot.com/multi/index.html</a><br><a href=\"https://play.google.com/store/apps/details?id=com.ionicframework.atvpmobile663442\"> <img alt=\"Get it on Google Play\" src=\"https://developer.android.com/images/brand/pt-br_generic_rgb_wo_45.png\" /></a>",
+											"Ranking de Tênis Virtual", invited, invited);
 							resp.put("email", "email_sent");
 
 						} catch (Exception e1) {
@@ -206,7 +195,7 @@ public class FriendServiceImpl extends BaseServlet {
 					}
 					return resp.toString();
 				} else {
-					System.err.println("no entity found sending new email");
+					LOG.severe("no entity found sending new email");
 					throw new EntityNotFoundException();
 				}
 
@@ -224,7 +213,9 @@ public class FriendServiceImpl extends BaseServlet {
 
 				new SendEmail().sendEmail("Olá,"
 
-				+ "<br>" + p.getName() + " lhe convidou para participar do aplicativo ATVP, Associação de Tenistas Virtuais Pro.<br><br>Acesse pelo <a href='http://1-dot-tenis-virtual-players.appspot.com/multi/index.html>site mobile</a><br><br><br> ou pelo aplicativo Android: <br><a href=\"https://play.google.com/store/apps/details?id=com.ionicframework.atvpmobile663442\"> <img alt=\"Get it on Google Play\" src=\"https://developer.android.com/images/brand/pt-br_generic_rgb_wo_45.png\" /></a>.<br>", "Ranking de Tênis Virtual", invited, invited);
+				+ "<br>" + p.getName()
+						+ " lhe convidou para participar do aplicativo ATVP, Associação de Tenistas Virtuais Pro.<br><br>Acesse pelo <a href='http://1-dot-tenis-virtual-players.appspot.com/multi/index.html>site mobile</a><br><br><br> ou pelo aplicativo Android: <br><a href=\"https://play.google.com/store/apps/details?id=com.ionicframework.atvpmobile663442\"> <img alt=\"Get it on Google Play\" src=\"https://developer.android.com/images/brand/pt-br_generic_rgb_wo_45.png\" /></a>.<br>",
+						"Ranking de Tênis Virtual", invited, invited);
 				resp.put("success", "email_sent");
 				return resp.toString();
 			} catch (Exception e1) {
@@ -241,11 +232,7 @@ public class FriendServiceImpl extends BaseServlet {
 			}
 
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.err.println(e.getMessage());
-			for (int i = 0; i < e.getStackTrace().length; i++) {
-				System.err.println(e.getStackTrace()[i].getClassName() + ":" + e.getStackTrace()[i].getLineNumber());
-			}
+			LOG.log(Level.SEVERE, "erro enviando invitations", e);
 			try {
 				resp.put("error", e.getMessage());
 				resp.put("email_error", e.getMessage());
